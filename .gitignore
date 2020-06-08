@@ -1,0 +1,4 @@
+secrets.nix
+hardware-configuration.nix
+*.sw[pon]
+id_rsa
