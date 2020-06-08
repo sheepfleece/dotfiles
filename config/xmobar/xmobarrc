@@ -1,0 +1,74 @@
+Config 
+  { font =    "xft:Bitstream Vera Sans Mono:size=12:antialias=true"
+
+  -- #84a0c6  - good
+  -- #e2a478  - average
+  -- #e27878  - bad 
+  , bgColor = "#1c1c1c"
+  , fgColor = "#d2d4de"
+
+  , allDesktops = True
+  , persistent  = False
+  , template = "| <fc=#84a0c6>%XMonadLog%</fc> | %battery% | %bright% | %coretemp% | %alsa:default:Master% | %wlp2s0wi%%sh%%dynnetwork% | }{| %date% | %kbd% |"
+  , commands = 
+  [ Run Kbd [("us", "US"), ("ru", "RU")]
+  , Run Date "<fc=#84a0c6>%d/%m/%y</fc> (%a) <fc=#e2a478>%T</fc>" "date" 10
+  , Run Battery 
+    [ "--template", "Battery: <acstatus>"
+    , "--Low", "35", "--High", "60"
+    , "--low", "#e27878", "--high", "#84a0c6", "--normal", "#e2a478"
+    , "--" -- battery specific options
+      , "-o", "<left>"
+      , "-O", "<left>…"
+      , "-i", "80"
+    ] 10
+  , Run CoreTemp 
+    [ "--Low", "45", "--High", "70"
+    , "--low", "#84a0c6", "--normal", "#e2a478", "--high", "#e27878"
+    , "--template", "Temp: <core0>"
+    ] 10
+  , Run DynNetwork 
+    [ "--template", ": <tx>/<rx>"
+    , "--normal", "#84a0c6"
+    , "--high", "#e2a478"
+    , "--Low", "-1", "--High", "10000"
+    ] 50
+  , Run Wireless "wlp2s0" 
+    [ "--template", "<essid>(<quality>)"
+    , "--normal", "#84a0c6", "--low", "#e27878"
+    , "--Low", "40", "--High", "110"
+    ] 50
+  , Run Brightness
+    [ "--template", "Brightness: <percent>"
+    , "--Low", "65", "--High", "75"
+    , "--low", "#84a0c6"
+    , "--normal", "#e2a478"
+    , "--high", "#e27878"
+    , "--" 
+    , "-D", "intel_backlight"
+    ] 50
+  , Run Alsa "default" "Master"
+    [ "--normal", "#e2a478"
+    , "--low", "#84a0c6"
+    , "--high", "#e27878"
+    , "--Low", "70", "--High", "150"
+    , "--template", "Volume: <volume> <status>"
+    , "--"
+      , "--onc", "#84a0c6"
+      , "--offc", "#e2a478"
+    ]
+  -- , Run Com "sh" ["-c", "rfkill list 0 | grep yes | wc -l | sed 's|0||' | sed 's|1|*|'"] "" 50
+  , Run Com "sh" ["-c", "rfkill list | tr -d '\n\t' | grep 'Wireless LANSoft blocked: yes' | wc -l | sed 's|0||' | sed 's|1|*|'"] "" 100
+  , Run XMonadLog
+  , Run Com "echo" ["I'll wait for you for as long as it takes"] "" 0
+  , Run MPD 
+    [ "-t", "<title>"
+    , "--"
+      , "-P", ">>"
+      , "-Z", "|"
+      , "-S", "><"
+    ] 10
+  , Run Com "shuf" ["-n", "1", "/home/sheep/Documents/Phrases"] "" 150
+  ]
+
+  }

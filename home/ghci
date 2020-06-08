@@ -1,0 +1,53 @@
+:set prompt "> "
+:set prompt-cont "| "
+
+:set -fobject-code
+:set -XNoStarIsType
+
+:seti -XTypeApplications
+:seti -XAllowAmbiguousTypes
+:seti -XScopedTypeVariables
+:seti -XRankNTypes
+:seti -XLambdaCase
+:seti -XBangPatterns
+
+:seti -XDataKinds
+:seti -XKindSignatures
+:seti -XPolyKinds
+:seti -XPartialTypeSignatures
+
+:seti -XTypeFamilies
+:seti -XViewPatterns
+:seti -XTypeInType
+
+:seti -XTypeOperators
+:seti -XFlexibleInstances
+:seti -XFlexibleContexts
+
+import Control.Monad
+import Control.Applicative
+
+import Control.Exception
+
+import Data.Foldable
+import Data.Traversable
+
+import Data.Bits
+import Data.Coerce
+
+import Data.Maybe
+import Data.List
+
+import Data.Void
+import Data.Function
+
+import Data.Monoid
+import Data.Semigroup
+
+import Data.Tuple
+import Data.Bifunctor
+
+:def hlint const . return $ ":! hlint \"src\""
+:def hoogle \s -> return $ ":!hoogle --count=7 \"" ++ s  ++ "\""
+
+:set -ferror-spans -freverse-errors -fprint-expanded-synonyms
