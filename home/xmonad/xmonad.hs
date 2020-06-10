@@ -61,7 +61,6 @@ myAdditionalKeys =
   ] ++
   [ ((myModMask, xK_c), sendMessage Killed >> withFocused killWindow)
   , ((myModMask, xK_Return), spawn "alacritty")
-  , ((myModMask .|. shiftMask, xK_semicolon), windows (greedyView "Media") >> spawn "alacritty --command 'ncmpcpp'")
   , ((myModMask, xK_u), windows swapMaster)
   , ((myModMask .|. shiftMask, xK_u), windows focusMaster)
 

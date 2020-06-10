@@ -17,6 +17,7 @@
     "tail" = "less +F";
     "tree" = "exa --tree";
     "fg"   = "fg 1>/dev/null 2>&1";
+    "cat"  = "bat";
 
     "j"    = "pop";   # j-pop, yes
     "jj"   = "pop 2";
@@ -47,7 +48,7 @@
 
     "v"    = "vim -R";
     "vm"   = "vim"; # vim mutable
-    "vr"   = "vim ~/.config/nixpkgs/dotfiles/vimrc.vim";
+    "ve"   = "vim ~/.config/nixpkgs/home/vimrc.vim";
     "vs"   = "sudoedit";
     "ka"   = "killall";
     "r"    = "ranger";

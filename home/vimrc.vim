@@ -10,11 +10,10 @@ set hidden
 set formatoptions+=j
 filetype plugin on
 
+set foldlevel=2
+
 " Escaping from the terminal mode.
 tnoremap <Esc> <C-\><C-n>
-
-" Start slightly folded.
-set foldlevel=1
 
 nmap ga <Plug>(EasyAlign)
 
@@ -100,11 +99,14 @@ nnoremap <leader>t :NERDTreeToggle<CR>
 noremap <space> "+
 
 " Fuzzy-navigation
-nnoremap V :GFiles<CR>
+nnoremap v :GFiles<CR>
 nnoremap <C-V> :Files<CR>
-nnoremap v :Buffers<CR>
+nnoremap V :Buffers<CR>
+nnoremap <C-Q> :bdelete<CR>
 
 " re-undo
 nnoremap U <C-r> 
 nnoremap Q :q<CR>
 
+" 
+nnoremap <space><space> :vert sb<CR>

@@ -2,7 +2,7 @@
   "journals": {
     "default": "/home/sheep/journal.txt"
   },
-  "editor": "vim",
+  "editor": "nvim",
   "encrypt": true,
   "default_hour": 9,
   "default_minute": 0,
