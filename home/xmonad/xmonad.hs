@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
+import           Data.Foldable
 import           XMonad                       hiding (Screen)
 import           XMonad.Actions.Minimize
 import           XMonad.Hooks.DynamicLog      (dynamicLogWithPP, ppOutput,
@@ -29,8 +30,9 @@ import           Control.Monad                (when)
 import qualified Data.List                    as L
 import           Data.Maybe
 
-data MyWorkspaces = W0
-    | Dev1
+import           Graphics.X11.Xinerama
+
+data MyWorkspaces = Dev1
     | Dev2
     | Media
     | Chats
@@ -50,12 +52,12 @@ data MyWorkspaces = W0
 -- Which keys are used for switching to a specific workspace
 myWorkspaces :: [(KeySym, String)]
 myWorkspaces = zip
-  ([xK_b, xK_n, xK_m, xK_semicolon, xK_quoteright, xK_bracketleft, xK_bracketright] ++ [xK_1..xK_9])
-  (fmap show [W0 ..])
+  ([xK_n, xK_m, xK_semicolon, xK_quoteright, xK_bracketleft, xK_bracketright] ++ [xK_1..xK_9])
+  (fmap show [minBound :: MyWorkspaces ..])
 
 myAdditionalKeys :: [((KeyMask, KeySym), X ())]
 myAdditionalKeys =
-  [ ((myModMask, key), (windows $ view ws))
+  [ ((myModMask, key), (windows $ greedyView ws))
   | (key, ws) <- myWorkspaces
   ] ++
   [ ((myModMask .|. shiftMask, key), (windows $ shift ws))
@@ -67,8 +69,8 @@ myAdditionalKeys =
   , ((myModMask .|. shiftMask, xK_u), windows focusMaster)
 
   , ((myModMask, xK_o), sendMessage ToggleStruts)
-  , ((myModMask, xK_p), spawn "rofi -show run")
-  , ((myModMask .|. shiftMask, xK_p), spawn "rofi -show window")
+  , ((myModMask, xK_p), spawn "rofi -m -4 -show run")
+  , ((myModMask .|. shiftMask, xK_p), spawn "rofi -m -4 -show window")
   , ((myModMask, xK_i), withFocused minimizeWindow)
   , ((myModMask .|. shiftMask, xK_i)
     , withLastMinimized maximizeWindowAndFocus)
@@ -219,18 +221,18 @@ myModMask = mod4Mask
 
 myConfig :: XConfig MyLayout
 myConfig = def
-  { modMask     = myModMask
-  , borderWidth = 2
+  { modMask            = myModMask
+  , borderWidth        = 2
   , focusedBorderColor = "#e2a478"
-  , normalBorderColor = "#1c1c1c"
-  , workspaces  = fmap snd myWorkspaces
-  , layoutHook  = myLayoutHook
-  , logHook     = myLogHook
-  , manageHook =
+  , normalBorderColor  = "#1c1c1c"
+  , workspaces         = fmap snd myWorkspaces
+  , layoutHook         = myLayoutHook
+  , logHook            = myLogHook
+  , manageHook         =
     -- =   insertPosition Below Newer
     myManageHook <+> manageHook def
-  , focusFollowsMouse = False
-  , terminal    = "alacritty"
+  , focusFollowsMouse  = False
+  , terminal           = "alacritty"
   } `additionalKeys` myAdditionalKeys
 
 main :: IO ()
@@ -238,6 +240,10 @@ main = do
   -- Ensure that only one instance of XMobar is running
   spawn "killall xmobar"
   threadDelay 100000 -- ugly
-  spawn "xmobar"
+
+  dpy <- openDisplay ""
+  ns  <- L.length <$> getScreenInfo dpy
+  for_ [0 .. ns - 1] $ \n -> spawn $ "xmobar --screen " <> show n
+
   xmonad $ ewmh (docks myConfig)
 
