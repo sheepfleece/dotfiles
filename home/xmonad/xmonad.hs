@@ -2,7 +2,7 @@
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-import           XMonad
+import           XMonad                       hiding (Screen)
 import           XMonad.Actions.Minimize
 import           XMonad.Hooks.DynamicLog      (dynamicLogWithPP, ppOutput,
                                                xmobar, xmonadPropLog)
@@ -16,10 +16,12 @@ import           XMonad.Layout.LayoutModifier (ModifiedLayout)
 import           XMonad.Layout.Minimize
 import           XMonad.Layout.NoBorders
 import           XMonad.Layout.Spacing
-import           XMonad.Operations
-import           XMonad.StackSet              hiding (workspaces)
 import           XMonad.Util.EZConfig
 import           XMonad.Util.Run
+
+import           XMonad.Core
+import           XMonad.Operations
+import           XMonad.StackSet              hiding (workspaces)
 
 import           Control.Applicative          ((<|>))
 import           Control.Concurrent
@@ -53,7 +55,7 @@ myWorkspaces = zip
 
 myAdditionalKeys :: [((KeyMask, KeySym), X ())]
 myAdditionalKeys =
-  [ ((myModMask, key), (windows $ greedyView ws))
+  [ ((myModMask, key), (windows $ view ws))
   | (key, ws) <- myWorkspaces
   ] ++
   [ ((myModMask .|. shiftMask, key), (windows $ shift ws))
@@ -128,12 +130,38 @@ instance LayoutClass MyTall a where
       resize Expand = MyTall (Tall nmaster delta (min 1 $ frac+delta))
 
 
+type XScreen = Screen WorkspaceId (Layout Window) Window ScreenId ScreenDetail
+
 -- Show name or the current workspace
 myLogHook :: X ()
-myLogHook = do
-  withWindowSet $ \winSet ->
-    let ws = workspace . current $ winSet
-    in xmonadPropLog $ postPad (layoutSymbol ws) $ pad 6 (tag ws)
+myLogHook = withWindowSet $ \winSet ->
+  let
+    csid :: ScreenId
+    csid = screen $ current winSet
+    ss :: [XScreen]
+    ss = L.sortOn screen $ screens winSet
+    ws :: [WindowSpace]
+    ws = workspace <$> ss
+
+    showName :: WindowSpace -> String
+    showName w = postPad (layoutSymbol w) $ pad 6 (tag w)
+
+    showScreenId :: XScreen -> String
+    showScreenId s
+      | sid /= csid = (\(S i) -> show i) sid
+      | otherwise   = (\(S i) -> "[" ++ show i ++ "]") sid
+      where
+        sid = screen s
+  in
+    xmonadPropLog $ case ws of
+      []  -> error "Impossible"
+      [w] -> showName w
+      _   -> L.intercalate ", "
+        $ zipWith each
+          (showScreenId <$> ss)
+          (showName <$> ws)
+        where
+          each n w = n ++ ":" ++ w
 
 -- Visually distinguish between different layouts
 layoutSymbol :: WindowSpace -> Maybe Char
