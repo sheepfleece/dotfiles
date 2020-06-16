@@ -9,6 +9,7 @@ set scrolloff=8
 set hidden
 set formatoptions+=j
 filetype plugin on
+set nowrap
 
 set foldlevel=2
 

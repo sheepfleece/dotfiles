@@ -39,6 +39,7 @@ let
 
     # Language specific plugins
     vim-nix
+    vim-fish
     rust-vim
     purescript-vim
     elm-vim
@@ -333,7 +334,7 @@ let
     configure = {
       customRC = '' 
         au ColorScheme farout hi Comment ctermfg=242 guifg=#6b7089
-        source ~/.config/nixpkgs/home/vimrc.vim
+        source ~/.vimrc.vim
         source ${coc-default-config}
       '';
       vam.pluginDictionaries = lib.singleton { 
