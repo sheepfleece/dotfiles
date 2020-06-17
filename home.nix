@@ -30,6 +30,8 @@
   services.mpd.enable = true;
   services.mpd.musicDirectory = "/home/sheep/Music";
 
+  services.dunst.enable = true;
+
   home.packages = with pkgs; [
     mpd 
     mpc_cli
@@ -63,6 +65,10 @@
     youtube-dl
 
     taskwarrior
+
+    tdesktop
+    blender
+    # python27Packages.howdoi
 
     # Friendship ended with C
     # Now Rust is my best friend
