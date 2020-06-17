@@ -64,6 +64,15 @@
     # Spawn a new terminal instance.
     "c"    = "$TERM & ; disown";
 
+    "cb" = "cabal build";
+    "cr" = "cabal run";
+    "cg" = "cabal repl"; # ghci
+
+    "sb" = "stack build";
+    "sr" = "stack run";
+
+    "nc" = "ncmpcpp";
+
     # list sizes
     "lss"  = "du -sh * | sort -rh | column -t";
 
