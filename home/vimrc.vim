@@ -100,9 +100,10 @@ nnoremap <leader>t :NERDTreeToggle<CR>
 noremap <space> "+
 
 " Fuzzy-navigation
-nnoremap v :GFiles<CR>
-nnoremap <C-V> :Files<CR>
-nnoremap V :Buffers<CR>
+nnoremap s :GFiles<CR>
+nnoremap <C-s> :Files<CR>
+nnoremap S :Buffers<CR>
+
 nnoremap <C-Q> :bdelete<CR>
 
 " re-undo

@@ -241,8 +241,8 @@ let
     nmap <leader>rn <Plug>(coc-rename)
 
     " Formatting selected code.
-    xmap <leader>f  <Plug>(coc-format-selected)
-    nmap <leader>f  <Plug>(coc-format-selected)
+    " xmap <leader>f  <Plug>(coc-format-selected)
+    " nmap <leader>f  <Plug>(coc-format-selected)
 
     augroup mygroup
       autocmd!
@@ -254,8 +254,8 @@ let
 
     " Applying codeAction to the selected region.
     " Example: `<leader>aap` for current paragraph
-    xmap <leader>a  <Plug>(coc-codeaction-selected)
-    nmap <leader>a  <Plug>(coc-codeaction-selected)
+    " xmap <leader>a  <Plug>(coc-codeaction-selected)
+    " nmap <leader>a  <Plug>(coc-codeaction-selected)
 
     " Remap keys for applying codeAction to the current line.
     nmap <leader>ac  <Plug>(coc-codeaction)
@@ -276,8 +276,8 @@ let
 
     " Use CTRL-S for selections ranges.
     " Requires 'textDocument/selectionRange' support of LS, ex: coc-tsserver
-    nmap <silent> <C-s> <Plug>(coc-range-select)
-    xmap <silent> <C-s> <Plug>(coc-range-select)
+    " nmap <silent> <C-s> <Plug>(coc-range-select)
+    " xmap <silent> <C-s> <Plug>(coc-range-select)
 
     " Add `:Format` command to format current buffer.
     command! -nargs=0 Format :call CocAction('format')
