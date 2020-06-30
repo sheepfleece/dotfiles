@@ -9,7 +9,7 @@ Config
 
   , allDesktops = True
   , persistent  = False
-  , template = "| <fc=#84a0c6>%XMonadLog%</fc> | %battery% | %bright% | %coretemp% | %alsa:default:Master% | %wlp2s0wi%%sh%%dynnetwork% | }{| %date% | %kbd% |"
+  , template = "| <fc=#84a0c6>%XMonadLog%</fc> | %battery% | %bright% | %coretemp% | %alsa:default:Master%| %wlp2s0wi%%sh%%dynnetwork% | %shuf% }{| %date% | %kbd% |"
   , commands = 
   [ Run Kbd [("us", "US"), ("ru", "RU")]
   , Run Date "<fc=#84a0c6>%d/%m/%y</fc> (%a) <fc=#e2a478>%T</fc>" "date" 10

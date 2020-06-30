@@ -33,49 +33,56 @@
   services.dunst.enable = true;
 
   home.packages = with pkgs; [
-    mpd 
-    mpc_cli
+    # Music
+    mpd           # music server
+    mpc_cli       # music front-end
     ncmpcpp       # music player
-    atool         # Archive helper
-    canto-curses  # RSS Reader
-    gdb           # GNU Debugger
-    haskellPackages.graphmod
-    graphviz      # Graphs builder
-    irssi         # IRC Channel
     libav         # fork of ffmpeg
     ffmpeg        # convert audio, etc.
-    lshw          # list hardware
     mp3val        # Repair mp3 songs
+
+    # Applications
+
+      # Terminal
+    canto-curses  # RSS Reader
+    irssi         # IRC Channel
+    taskwarrior   # Notes
+    youtube-dl
+    bat           # cat
+    exa           # ls
+
+      # UI 
+    krita         # graphics editor
+    blender       # 3D creation suite
+    tdesktop
+    skypeforlinux   
+
+    # Tools
+    lshw          # list hardware
     mtr           # traceroute, ping
+    bandwhich
+    haskellPackages.graphmod
+    sysstat       # performance tools
+    atool         # Archive helper
+    gdb           # GNU Debugger
+    graphviz      # Graphs builder
     ntfs3g        # mounting ntfs stuff
+    ueberzug      # Ranger image previewer
+    shotgun 
 
     stylish-haskell
 
-    ueberzug        # Ranger image previewer
     rofi-unwrapped  # windows switcher
-    skypeforlinux   
-    sysstat         # performance tools
     texlive.combined.scheme-full
     xbindkeys
     xkb-switch
-    python37Packages.pygments
     xorg.xkbcomp
     xorg.xmodmap
     xss-lock
-    youtube-dl
 
-    taskwarrior
-
-    tdesktop
-    blender
+    # Broken
     # python27Packages.howdoi
-
-    # Friendship ended with C
-    # Now Rust is my best friend
-    bat 
-    exa 
-    bandwhich
-    shotgun 
+    # diskonaut
   ];
 
   programs.home-manager = {

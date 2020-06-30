@@ -5,7 +5,7 @@ function fish_prompt
   end
   if jobs -q
     set_color e27878
-    prompt_echo '★'
+    echo '★'
   end
   if test "$IN_NIX_SHELL" = "impure" 
     set_color 84a0c6
