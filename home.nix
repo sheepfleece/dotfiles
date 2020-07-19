@@ -54,7 +54,7 @@
       # UI 
     krita         # graphics editor
     blender       # 3D creation suite
-    tdesktop
+    # tdesktop
     skypeforlinux   
 
     # Tools
@@ -79,6 +79,8 @@
     xorg.xkbcomp
     xorg.xmodmap
     xss-lock
+
+    steam
 
     # Broken
     # python27Packages.howdoi
