@@ -20,7 +20,7 @@ nmap ga <Plug>(EasyAlign)
 
 " iceberg is a default theme. 
 " Refresh syntax highlighting on each keystroke.
-" Haskell breaks otherwise.
+" Haskell syntax breaks otherwise.
 let g:solarized_termcolors=256
 let g:airline_theme='minimalist'
 set background=dark

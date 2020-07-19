@@ -43,6 +43,7 @@ let
     rust-vim
     purescript-vim
     elm-vim
+    idris-vim
 
     # Haskell IDE
     vim-textobj-haskell # <action>ah
@@ -56,6 +57,7 @@ let
     # vim-easymotion
     # tagbar
     # vim-hoogle
+    # vim-haskell
   ];
 
   vim-haskellFold = vimUtils.buildVimPluginFrom2Nix {
@@ -138,6 +140,18 @@ let
       repo = "vimroom";
       rev = "a39a90f15bead8567d46b324db0c5f8861738fa0";
       sha256 = "0zhlacvkkdvfqdpvhwn7kvyr1w84vl76kqhm5rmhgdgyfmi6zh2v";
+    };
+    dependencies = [];
+  };
+
+  vim-haskell = vimUtils.buildVimPluginFrom2Nix {
+    pname = "vim-haskell";
+    version = "0.0.0";
+    src = fetchFromGitHub {
+      owner = "axelf4";
+      repo = "vim-haskell";
+      rev = "937abd5817487faa00a08d3986bdda90c55128c4";
+      sha256 = "1364ip3ygpx2lfnfdg89drvdfk7fca7rdnj63mjhhbx10myk2nx3";
     };
     dependencies = [];
   };
