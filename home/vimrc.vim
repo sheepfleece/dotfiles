@@ -89,8 +89,6 @@ nnoremap <C-l> <C-w>l
 " Not remapped marks are still usable. 
 let mapleader = "m"
 
-" Save and put the cursor where it was before
-nnoremap <leader>w mq:wa<CR>`q
 let g:SignatureIncludeMarks = 'abcdefghijklmnoprstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 " Toggle NERDTree 
@@ -112,3 +110,20 @@ nnoremap Q :q<CR>
 
 " 
 nnoremap <space><space> :vert sb<CR>
+
+
+let rumap = 'йцукенгшщзхъфывапролджэёячсмитьбюЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮ'
+let enmap = 'qwertyuiop[]asdfghjkl;''\zxcvbnm,.QWERTYUIOP{}ASDFGHJKL:"ZXCVBNM<>' 
+let mapLen = strchars(rumap)
+let i = 0
+while i < mapLen
+    let ruChar = matchstr(rumap, ".", byteidx(rumap, i))
+    let enChar = enmap[i]
+    "echo 'map '.ruChar.' '.enChar
+    execute 'map '.ruChar.' '.enChar
+    execute 'cmap '.ruChar.' '.enChar
+    let i += 1
+endwhile
+
+map Ё \|
+cmap Ё \|

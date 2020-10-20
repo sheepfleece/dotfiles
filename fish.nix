@@ -35,7 +35,7 @@
     "ns"   = "nix-shell --command fish";
 
     "nr"   = "sudo nixos-rebuild switch";
-    "ne"   = "sudo vim /etc/nixos"; # sudoedit doesn't open directories
+    "ne"   = "sudo -E vim /etc/nixos"; # sudoedit doesn't open directories
     "nE"   = "vim -R /etc/nixos";
 
     "hr"   = "home-manager switch";

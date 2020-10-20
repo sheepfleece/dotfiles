@@ -19,5 +19,7 @@
     map <C-u> scroll up
     map <PageDown> scroll half-down
     map <PageUp>   scroll half-up
+
+    set selection-clipboard clipboard
   '';
 }

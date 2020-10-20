@@ -5,6 +5,9 @@
 import           Data.Foldable
 import           XMonad                       hiding (Screen)
 import           XMonad.Actions.Minimize
+
+import           XMonad.Config.Kde
+import           XMonad.Config.Prime          (getClassHint, resClass)
 import           XMonad.Hooks.DynamicLog      (dynamicLogWithPP, ppOutput,
                                                xmobar, xmonadPropLog)
 import           XMonad.Hooks.EwmhDesktops
@@ -34,10 +37,10 @@ import           Graphics.X11.Xinerama
 
 data MyWorkspaces = Dev1
     | Dev2
-    | Media
-    | Chats
     | Etc1
     | Etc2
+    | Media
+    | Chats
     | W1
     | W2
     | W3
@@ -65,8 +68,9 @@ myAdditionalKeys =
   ] ++
   [ ((myModMask, xK_c), sendMessage Killed >> withFocused killWindow)
   , ((myModMask, xK_Return), spawn "alacritty")
-  , ((myModMask, xK_u), windows swapMaster)
-  , ((myModMask .|. shiftMask, xK_u), windows focusMaster)
+
+  , ((myModMask .|. shiftMask, xK_u), windows swapMaster)
+  , ((myModMask, xK_u), windows focusMaster)
 
   , ((myModMask, xK_o), sendMessage ToggleStruts)
   , ((myModMask, xK_p), spawn "rofi -m -4 -show run")
@@ -82,12 +86,54 @@ myManageHook = composeAll $
   [ (className =? "Firefox" <&&> resource =? "Dialog") --> doFloat
   , (className =? "TelegramDesktop" <&&> title =? "Media viewer") --> doFloat
   , (className =? "Anki") --> doFloat
+
+  , (title =? "Desktop - Plasma")   --> doFloat
+  , (title =? "plasma-desktop")     --> doFloat
+  , (title =? "win7")               --> doFloat
+  , (className =? "plasmashell")    --> doFloat
+  , (className =? "Plasma")         --> doFloat
+  , (className =? "krunner")        --> doFloat
+  , (className =? "kmix")           --> doFloat
+  , (className =? "klipper")        --> doFloat
+  , (className =? "Plasmoidviewer") --> doFloat
+  , (className =? ksmserver)        --> scatter notFilledWorkspace
+  , (className =? ksmserver)        --> doFloat
+
   ] ++
   [ "TelegramDesktop", "discord"] `sendTo` Chats ++
   [ "mpv", "tixati", "Tixati" ] `sendTo` Media
   where
     sendTo :: [String] -> MyWorkspaces -> [ManageHook]
     sendTo names ws = map (\name -> className =? name --> doShift (show ws)) names
+
+    ksmserver = "ksmserver"
+
+    scatter :: X (Maybe String) -> ManageHook
+    scatter action = do
+      mws <- liftX action
+      case mws of
+        Nothing -> doF id
+        Just ws -> doShift ws
+
+
+    notFilledWorkspace :: X (Maybe String)
+    notFilledWorkspace = do
+      dsp    <- asks display
+      winset <- gets windowset
+      let
+        loop :: [Screen String l Window sid sd] -> IO (Maybe String)
+        loop [] = pure Nothing
+        loop (screen:screens) = do
+          classNames <-
+            let
+              getClassName :: Window -> IO String
+              getClassName = fmap resClass . getClassHint dsp
+              getWindows   = integrate' . stack . workspace
+            in sequence $ getClassName <$> (getWindows screen)
+          if (any (== ksmserver) classNames)
+            then loop screens
+            else pure . Just . tag . workspace $ screen
+      liftIO $ loop $ screens winset
 
 
 -- Slightly configured Tall layout which tracks killed windows
@@ -205,10 +251,10 @@ type MyLayout =
   (ModifiedLayout Spacing
   (ModifiedLayout AvoidStruts (Choose MyTall Full))))
 
-myLayoutHook :: Eq a => MyLayout a
-myLayoutHook
+myLayoutHook :: Eq a => Integer -> MyLayout a
+myLayoutHook n
   = smartBorders
-  $ spacingRaw True (Border 0 5 5 5) True (Border 5 5 5 5) True
+  $ spacingRaw True (Border 0 n n n) True (Border n n n n) True
   $ avoidStruts $ tiled ||| Full
   where
     tiled = MyTall $ Tall nmaster delta ratio
@@ -220,17 +266,17 @@ myModMask :: KeyMask
 myModMask = mod4Mask
 
 myConfig :: XConfig MyLayout
-myConfig = def
+myConfig = kdeConfig
   { modMask            = myModMask
-  , borderWidth        = 2
+  , borderWidth        = 3
   , focusedBorderColor = "#e2a478"
   , normalBorderColor  = "#1c1c1c"
   , workspaces         = fmap snd myWorkspaces
-  , layoutHook         = myLayoutHook
+  , layoutHook         = myLayoutHook 0
   , logHook            = myLogHook
   , manageHook         =
     -- =   insertPosition Below Newer
-    myManageHook <+> manageHook def
+    myManageHook <+> manageHook kdeConfig
   , focusFollowsMouse  = False
   , terminal           = "alacritty"
   } `additionalKeys` myAdditionalKeys
@@ -243,7 +289,8 @@ main = do
 
   dpy <- openDisplay ""
   ns  <- L.length <$> getScreenInfo dpy
+
   for_ [0 .. ns - 1] $ \n -> spawn $ "xmobar --screen " <> show n
 
-  xmonad $ ewmh (docks myConfig)
+  xmonad . ewmh . docks $ myConfig
 

@@ -2,6 +2,8 @@
 
 with pkgs;
 let 
+  sources = import ./nix/sources.nix;
+
   plugins = with vimPlugins; [
     fzf-vim fzfWrapper  # :Files, :Rg, :Colors
     nerdtree            # :NERDTreeToggle 
@@ -15,6 +17,9 @@ let
     vim-eunuch          # :Delete, :Move, :Rename
     vim-sneak           # s<char><char>, ;, <action>z<char><char>
     vim-easy-align      # ga<object><char>
+    vim-move            # <A-j> <A-k>
+
+    vim-startuptime
   
     # Language server
     coc-nvim
@@ -29,7 +34,7 @@ let
     vim-textobj-line   # <action>al
 
     # Signatures for navigation marks
-    vim-signature
+    # vim-signature
 
     # Themes
     iceberg-vim
@@ -58,7 +63,38 @@ let
     # tagbar
     # vim-hoogle
     # vim-haskell
+    # vim-neuron
   ];
+
+  vim-startuptime = vimUtils.buildVimPlugin {
+    pname = "vim-startuptime";
+    version = "0.0.0";
+    src = builtins.fetchTarball {
+      url = sources."startuptime.vim".url;
+      sha256 = sources."startuptime.vim".sha256;
+    };
+  };
+
+  vim-neuron = vimUtils.buildVimPlugin {
+    pname = "vim-neuron";
+    version = "0.0.0";
+    src = builtins.fetchTarball {
+      url = sources."neuron.vim".url;
+      sha256 = sources."neuron.vim".sha256;
+    };
+  };
+
+  vim-move = vimUtils.buildVimPluginFrom2Nix {
+    pname = "vim-move";
+    version = "0.0.0";
+    src = fetchFromGitHub {
+      owner = "matze";
+      repo = "vim-move";
+      rev = "1bd929a073b358bfb3bbd299db04dd6c1334abd9";
+      sha256 = "1cq69lp3nffm02wp6nyk5y69zwl07rxvdakv6kqkzbxxshigzyxl";
+    };
+    dependencies = [];
+  };
 
   vim-haskellFold = vimUtils.buildVimPluginFrom2Nix {
     pname = "vim-haskellFold";
@@ -347,12 +383,14 @@ let
     vimAlias = true;
     configure = {
       customRC = '' 
+        let loaded_netrwPlugin = 1
         au ColorScheme farout hi Comment ctermfg=242 guifg=#6b7089
         source ~/.vimrc.vim
         source ${coc-default-config}
       '';
-      vam.pluginDictionaries = lib.singleton { 
-        names = plugins;
+      packages.myVimPackage = {
+        start = plugins;
+        opt = [ ];
       };
     };
   };

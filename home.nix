@@ -9,11 +9,13 @@
       ./fish.nix
     ];
 
+  # Copy everything from `./config` into `~/.config`
   xdg.configFile."." = {
     source = ./config;
     recursive = true;
   };
 
+  # Copy everything from `./home` into `~`.
   home.file = with lib.attrsets; let
     files  = builtins.readDir prefix;
     prefix = ./home;
@@ -34,6 +36,7 @@
 
   home.packages = with pkgs; [
     # Music
+    mpv 
     mpd           # music server
     mpc_cli       # music front-end
     ncmpcpp       # music player
@@ -44,28 +47,23 @@
     # Applications
 
       # Terminal
-    canto-curses  # RSS Reader
     irssi         # IRC Channel
-    taskwarrior   # Notes
     youtube-dl
-    bat           # cat
-    exa           # ls
 
       # UI 
-    krita         # graphics editor
-    blender       # 3D creation suite
-    # tdesktop
-    skypeforlinux   
+    # krita         # graphics editor
+    # blender       # 3D creation suite
+    # aseprite      
 
     # Tools
-    lshw          # list hardware
+    # lshw          # list hardware
     mtr           # traceroute, ping
     bandwhich
     haskellPackages.graphmod
+    graphviz      # Graphs builder
     sysstat       # performance tools
     atool         # Archive helper
-    gdb           # GNU Debugger
-    graphviz      # Graphs builder
+    # gdb           # GNU Debugger
     ntfs3g        # mounting ntfs stuff
     ueberzug      # Ranger image previewer
     shotgun 
@@ -80,11 +78,42 @@
     xorg.xmodmap
     xss-lock
 
-    steam
+    niv
 
+    # (let neuronSrc = builtins.fetchTarball "https://github.com/srid/neuron/archive/master.tar.gz";
+    #   in import neuronSrc {})
+
+    wine
+    # sdcv
+    # artha
+    # scala
+    pandoc
+
+    # marble # maps
+    (tor-browser-bundle-bin.override {
+      extraPrefs = ''
+        lockPref("browser.tabs.remote.autostart", false);
+        lockPref("browser.tabs.remote.autostart.2", false);
+      '';
+    })
+    steam
     # Broken
     # python27Packages.howdoi
     # diskonaut
+
+    firefox 
+    # tixati
+    zathura jrnl anki
+    gimp imagemagick libreoffice
+
+
+
+    sxiv feh
+    ifuse libimobiledevice 
+    unetbootin usbmuxd woeusb
+    # wlroots
+    # tdesktop
+    traceroute
   ];
 
   programs.home-manager = {

@@ -9,9 +9,9 @@ Config
 
   , allDesktops = True
   , persistent  = False
-  , template = "| <fc=#84a0c6>%XMonadLog%</fc> | %battery% | %bright% | %coretemp% | %alsa:default:Master%| %wlp2s0wi%%sh%%dynnetwork% | %shuf% }{| %date% | %kbd% |"
+  , template = "| <fc=#84a0c6>%XMonadLog%</fc> | %battery% | %touch% | %bright% | %coretemp% | %alsa:default:Master%| %wlp2s0wi%%sh%%dynnetwork% | %shuf% }{| %date% | %kbd% |"
   , commands = 
-  [ Run Kbd [("us", "US"), ("ru", "RU")]
+  [ Run Kbd [("by(latin)", "BY"), ("ru", "RU")]
   , Run Date "<fc=#84a0c6>%d/%m/%y</fc> (%a) <fc=#e2a478>%T</fc>" "date" 10
   , Run Battery 
     [ "--template", "Battery: <acstatus>"
@@ -57,10 +57,7 @@ Config
       , "--onc", "#84a0c6"
       , "--offc", "#e2a478"
     ]
-  -- , Run Com "sh" ["-c", "rfkill list 0 | grep yes | wc -l | sed 's|0||' | sed 's|1|*|'"] "" 50
-  , Run Com "sh" ["-c", "rfkill list | tr -d '\n\t' | grep 'Wireless LANSoft blocked: yes' | wc -l | sed 's|0||' | sed 's|1|*|'"] "" 100
   , Run XMonadLog
-  , Run Com "echo" ["I'll wait for you for as long as it takes"] "" 0
   , Run MPD 
     [ "-t", "<title>"
     , "--"
@@ -68,7 +65,25 @@ Config
       , "-Z", "|"
       , "-S", "><"
     ] 10
-  , Run Com "shuf" ["-n", "1", "/home/sheep/Documents/Phrases"] "" 150
+
+  , Run Com "echo" 
+    ["I'll wait for you for as long as it takes"] "" 0
+
+  , Run Com "sh" 
+    [ "-c"
+    , "sed '/^$/d' '/home/sheep/Documents/Phrases' | sed '/^[?*].*/d' | shuf -n 1 | sed 's/--.*$//'"
+    ] "shuf" 150
+
+  , Run Com "sh" 
+    [ "-c"
+    , "xinput list-props 'SYNA3081:00 06CB:826F Touchpad' | grep '.*Device Enabled.*'| sed 's/[^:]*//' | sed 's/.*0/Touch: -/' | sed 's/.*1/Touch: +/'"
+
+    ] "touch" 100
+
+  , Run Com "sh" 
+    [ "-c"
+    , "rfkill list | tr -d '\n\t' | grep 'Wireless LANSoft blocked: yes' | wc -l | sed 's|0||' | sed 's|1|*|'"
+    ] "" 100
   ]
 
   }

@@ -1,0 +1,98 @@
+{
+    "kmonad": {
+        "branch": "master",
+        "description": "An advanced keyboard manager",
+        "homepage": null,
+        "owner": "david-janssen",
+        "repo": "kmonad",
+        "rev": "99f9a05eb1707940b933ed9a838242833248d30e",
+        "sha256": "15a7sl3z2h9qsgn1ca4594zh4g52lq5gs5nyxcf0lwqpdsixr4iq",
+        "type": "tarball",
+        "url": "https://github.com/david-janssen/kmonad/archive/99f9a05eb1707940b933ed9a838242833248d30e.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "neuron.vim": {
+        "branch": "master",
+        "description": "📝 Manage your Zettelkasten in {n}vim.",
+        "homepage": "",
+        "owner": "ihsanturk",
+        "repo": "neuron.vim",
+        "rev": "07521a3ef2940bd726e7b4d50b82e46898e686cc",
+        "sha256": "0myadiy6y2p73lhdzk2w55whg4i5rs004jaw1m21cz0dk8k8ibn2",
+        "type": "tarball",
+        "url": "https://github.com/ihsanturk/neuron.vim/archive/07521a3ef2940bd726e7b4d50b82e46898e686cc.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "niv": {
+        "branch": "master",
+        "description": "Easy dependency management for Nix projects",
+        "homepage": "https://github.com/nmattia/niv",
+        "owner": "nmattia",
+        "repo": "niv",
+        "rev": "29ddaaf4e099c3ac0647f5b652469dfc79cd3b53",
+        "sha256": "1va6myp07gkspgxfch8z3rs9nyvys6jmgzkys6a2c4j09qxp1bs0",
+        "type": "tarball",
+        "url": "https://github.com/nmattia/niv/archive/29ddaaf4e099c3ac0647f5b652469dfc79cd3b53.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "nixpkgs": {
+        "branch": "nixos-19.09",
+        "description": "A read-only mirror of NixOS/nixpkgs tracking the released channels. Send issues and PRs to",
+        "homepage": "https://github.com/NixOS/nixpkgs",
+        "owner": "NixOS",
+        "repo": "nixpkgs-channels",
+        "rev": "289466dd6a11c65a7de4a954d6ebf66c1ad07652",
+        "sha256": "0r5ja052s86fr54fm1zlhld3fwawz2w1d1gd6vbvpjrpjfyajibn",
+        "type": "tarball",
+        "url": "https://github.com/NixOS/nixpkgs-channels/archive/289466dd6a11c65a7de4a954d6ebf66c1ad07652.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "startuptime.vim": {
+        "branch": "master",
+        "description": "Breakdown Vim's --startuptime output",
+        "homepage": "",
+        "owner": "tweekmonster",
+        "repo": "startuptime.vim",
+        "rev": "dfa57f522d6f61793fe5fea65bca7484751b8ca2",
+        "sha256": "0iikp8098mcjb6z54jyn0f58lb02pd2zzdsy4q6qls4m9j4j3fqh",
+        "type": "tarball",
+        "url": "https://github.com/tweekmonster/startuptime.vim/archive/dfa57f522d6f61793fe5fea65bca7484751b8ca2.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "vim-haskellFold": {
+        "branch": "master",
+        "description": "Vim plugin providing folding for haskell, displaying type signatures",
+        "homepage": "http://www.vim.org/scripts/script.php?script_id=2846",
+        "owner": "sheepfleece",
+        "repo": "vim-haskellFold",
+        "rev": "9d3b87dd1d9ede03de62a37e1411a8d35e765700",
+        "sha256": "0hdw0535d59zmfcg0ly9krkk7gyz20yy9013v20llnf748m28ada",
+        "type": "tarball",
+        "url": "https://github.com/sheepfleece/vim-haskellFold/archive/9d3b87dd1d9ede03de62a37e1411a8d35e765700.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "vim-move": {
+        "branch": "master",
+        "description": "Plugin to move lines and selections up and down",
+        "homepage": "http://www.vim.org/scripts/script.php?script_id=4687",
+        "owner": "matze",
+        "repo": "vim-move",
+        "rev": "1460aa915c521864c926aa51fe20bf6bb8eaa065",
+        "sha256": "0sbdd1z8nlwpac1n4234pnczavxr1kazvj86xp4a8aa7vggdm9xa",
+        "type": "tarball",
+        "url": "https://github.com/matze/vim-move/archive/1460aa915c521864c926aa51fe20bf6bb8eaa065.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "vim-ripgrep": {
+        "branch": "master",
+        "description": "Use RipGrep in Vim and display results in a quickfix list",
+        "homepage": null,
+        "owner": "jremmen",
+        "repo": "vim-ripgrep",
+        "rev": "ec87af6b69387abb3c4449ce8c4040d2d00d745e",
+        "sha256": "1by56rflr0bmnjvcvaa9r228zyrmxwfkzkclxvdfscm7l7n7jnmh",
+        "type": "tarball",
+        "url": "https://github.com/jremmen/vim-ripgrep/archive/ec87af6b69387abb3c4449ce8c4040d2d00d745e.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    }
+}

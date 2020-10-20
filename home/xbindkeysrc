@@ -61,8 +61,11 @@
 "cd Pictures/screenshots && shotgun"
   Print
 
+"cd Pictures/screenshots && shotgun --id `xdotool getactivewindow`"
+  Control + Print
+
 # Touchpad
-"${HOME}/dotfiles/scripts/touchpad-toggle"
+"touchpad-toggle"
   XF86Display
 
 # Second keyboard
