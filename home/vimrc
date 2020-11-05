@@ -13,6 +13,9 @@ set nowrap
 
 set foldlevel=2
 
+noremap j gj
+noremap k gk
+
 " Escaping from the terminal mode.
 tnoremap <Esc> <C-\><C-n>
 
@@ -24,7 +27,7 @@ nmap ga <Plug>(EasyAlign)
 let g:solarized_termcolors=256
 let g:airline_theme='minimalist'
 set background=dark
-colorscheme iceberg
+colorscheme nord
 syntax on
 set noshowmode
 au Syntax * syntax sync fromstart
@@ -125,5 +128,7 @@ while i < mapLen
     let i += 1
 endwhile
 
+
+map ў o
 map Ё \|
 cmap Ё \|

@@ -71,7 +71,7 @@ Config
 
   , Run Com "sh" 
     [ "-c"
-    , "sed '/^$/d' '/home/sheep/Documents/Phrases' | sed '/^[?*].*/d' | shuf -n 1 | sed 's/--.*$//'"
+    , "sed '/^$/d' '/home/sheep/Documents/Bel.md' | sed '/^[?*].*/d' | shuf -n 1 | sed 's/--.*$//'"
     ] "shuf" 150
 
   , Run Com "sh" 

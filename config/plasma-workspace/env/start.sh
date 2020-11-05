@@ -5,3 +5,4 @@ xmodmap -e 'keycode 66 = Escape NoSymbol Escape'
 feh --no-fehbg --bg-fill  Pictures/Wallpapers/Ryuuguu.Rena.full.547885.jpg 
 xbindkeys
 
+mpdscribble

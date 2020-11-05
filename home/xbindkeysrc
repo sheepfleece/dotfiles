@@ -68,19 +68,32 @@
 "touchpad-toggle"
   XF86Display
 
-# Second keyboard
+# Another keyboard
 
-# Touchpad
-"xdotool key XF86Display"
-  XF86HomePage
+# Increase backlight
+"light -A 10"
+   Mod4 + equal
 
-# Brightness
-"xdotool key XF86MonBrightnessDown"
-  XF86Mail
+# Decrease backlight
+"light -U 10"
+   Mod4 + minus
 
-"xdotool key XF86MonBrightnessUp"
-  XF86AudioPlay
+# Increase volume
+"pactl set-sink-volume @DEFAULT_SINK@ +3000"
+   Mod4 + 0
 
+# Decrease volume
+"pactl set-sink-volume @DEFAULT_SINK@ -3000"
+   Mod4 + 9
+
+# Mute volume
+"pactl set-sink-mute @DEFAULT_SINK@ toggle"
+   Mod4 + 8
+
+
+"if [ `setxkbmap -query | grep layout | grep -o ru | wc -l` -eq 1 ]; then setxkbmap -layout 'by(latin),by'; else setxkbmap -layout 'by(latin),ru'; fi"
+    Alt + equal 
+  
 ##################################
 # End of xbindkeys configuration #
 ##################################

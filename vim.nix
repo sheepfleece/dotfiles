@@ -34,13 +34,15 @@ let
     vim-textobj-line   # <action>al
 
     # Signatures for navigation marks
-    # vim-signature
+    vim-signature
 
     # Themes
     iceberg-vim
     vim-colors-solarized
     vim-farout
     gruvbox 
+    nord-vim
+    vim-colorschemes
 
     # Language specific plugins
     vim-nix
@@ -63,7 +65,7 @@ let
     # tagbar
     # vim-hoogle
     # vim-haskell
-    # vim-neuron
+    vim-neuron
   ];
 
   vim-startuptime = vimUtils.buildVimPlugin {
@@ -385,7 +387,7 @@ let
       customRC = '' 
         let loaded_netrwPlugin = 1
         au ColorScheme farout hi Comment ctermfg=242 guifg=#6b7089
-        source ~/.vimrc.vim
+        source ~/.vimrc
         source ${coc-default-config}
       '';
       packages.myVimPackage = {

@@ -1,6 +1,7 @@
 {
   programs.fish.enable = true;
   programs.fish.shellAliases = {
+    "vim"  = "nvim";
     "l."   = "exa -ld .* --group-directories-first";
     "ll"   = "exa -l --group-directories-first --git";
     "la"   = "exa -l --group-directories-first --time=atime";
@@ -26,10 +27,22 @@
 
     "yd"   = ''
       youtube-dl --yes-playlist -o $HOME'/Videos/%(playlist_title)s/%(title)s.%(ext)s'
-      '';
+    '';
     "yda"  = ''
       youtube-dl --yes-playlist -x --audio-quality 0
     '';
+
+
+    cbuild="cabal build --enable-tests --enable-benchmarks --write-ghc-environment-files=always -O0";
+    ctest="cabal test --enable-tests --test-show-details=direct -O0";
+    cbench="cabal bench --enable-benchmarks -O0";
+    crun="cabal run -O0";
+    cclean="cabal clean";
+    cupdate="cabal update";
+    crepl="cabal repl --build-depends pretty-simple";
+    cdoc="cabal haddock --enable-documentation";
+    cdochackage="cabal haddock --enable-documentation --haddock-for-hackage";
+    cdist="cabal sdist";
   };
   programs.fish.shellAbbrs = {
     "ns"   = "nix-shell --command fish";

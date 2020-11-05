@@ -41,15 +41,12 @@ data MyWorkspaces = Dev1
     | Etc2
     | Media
     | Chats
+    | Book1
+    | Book2
+    | Book3
+    | Book4
     | W1
     | W2
-    | W3
-    | W4
-    | W5
-    | W6
-    | W7
-    | W8
-    | W9
     deriving (Show, Eq, Bounded, Ord, Enum)
 
 -- Which keys are used for switching to a specific workspace
@@ -98,6 +95,7 @@ myManageHook = composeAll $
   , (className =? "Plasmoidviewer") --> doFloat
   , (className =? ksmserver)        --> scatter notFilledWorkspace
   , (className =? ksmserver)        --> doFloat
+  , (className =? "kwalletd5")      --> doFloat
 
   ] ++
   [ "TelegramDesktop", "discord"] `sendTo` Chats ++

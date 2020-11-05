@@ -51,3 +51,5 @@ import Data.Bifunctor
 :def hoogle \s -> return $ ":!hoogle --count=7 \"" ++ s  ++ "\""
 
 :set -ferror-spans -freverse-errors -fprint-expanded-synonyms
+
+:set -interactive-print=Text.Pretty.Simple.pPrint
