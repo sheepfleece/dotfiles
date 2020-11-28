@@ -1,5 +1,5 @@
 {
-  programs.zathura.enable = true;
+  # programs.zathura.enable = true;
   programs.zathura.extraConfig = ''
     set statusbar-h-padding 0
     set statusbar-v-padding 0

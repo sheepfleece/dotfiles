@@ -19,18 +19,13 @@
     "tree" = "exa --tree";
     "fg"   = "fg 1>/dev/null 2>&1";
     "cat"  = "bat";
+    "news" = "newsboat";
 
     "j"    = "pop";   # j-pop, yes
     "jj"   = "pop 2";
     "jjj"  = "pop 3";
     "jjjj" = "pop 4";
-
-    "yd"   = ''
-      youtube-dl --yes-playlist -o $HOME'/Videos/%(playlist_title)s/%(title)s.%(ext)s'
-    '';
-    "yda"  = ''
-      youtube-dl --yes-playlist -x --audio-quality 0
-    '';
+    "stopwatch" = "time read";
 
 
     cbuild="cabal build --enable-tests --enable-benchmarks --write-ghc-environment-files=always -O0";
@@ -47,6 +42,8 @@
   programs.fish.shellAbbrs = {
     "ns"   = "nix-shell --command fish";
 
+    "nix-env" = "no";
+    "-"    = "cd -";
     "nr"   = "sudo nixos-rebuild switch";
     "ne"   = "sudo -E vim /etc/nixos"; # sudoedit doesn't open directories
     "nE"   = "vim -R /etc/nixos";
@@ -69,6 +66,7 @@
     "wd"   = "pwd";  # p is hard to type
     "to"   = "htop"; # any problems with that?
     "ot"   = "opt";
+    "cit"   = "choose_images_telegram";
 
     # Notice spaces. 
     "note" = " jrnl Note.";
@@ -89,6 +87,8 @@
     # list sizes
     "lss"  = "du -sh * | sort -rh | column -t";
 
+    "yd"   = "youtube-dl";
+
     # query system-wide packages
     "nq"   = ''
       find /run/current-system/sw/bin/ -type l -exec readlink {} \; | sed -E 's|[^-]+-([^/]+)/.*|\1|g' | sort -u
@@ -104,6 +104,7 @@
     set -x fish_color_param '84a0c6'
     set -x fish_color_quote 'e2a478'
     set -x fish_color_operator 'e2a478'
+    set -x PATH "$PATH:/home/sheep/dotfiles/scripts"
     set FZF_DEFAULT_COMMAND 'fd --type f'
     # set PATH $HOME/dotfiles/scripts $PATH
     eval (direnv hook fish)

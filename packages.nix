@@ -1,83 +1,125 @@
 { pkgs, ... }:
 {
-  home.packages = with pkgs; [
-    # Music
-    mpd           # music server
-    mpv mpc_cli   # music front-end  
-    ncmpcpp       # music player
+  programs.firefox = {
+    enable = true;
+  };
 
-    libav         # fork of ffmpeg
-    ffmpeg        # convert audio, etc.
-    mp3val        # Repair mp3 songs
+  home.packages = with pkgs; let
 
-    # Applications
+    neuron = let 
+      neuronSrc = builtins.fetchTarball "https://github.com/srid/neuron/archive/master.tar.gz";
+    in import neuronSrc {};
 
-      # Terminal
-    irssi         # IRC Channel
-    youtube-dl
+    graphics = [
+      krita         # graphics editor
+      blender       # 3D creation suite
+      aseprite      
+      darktable
+    ];
 
-      # UI 
-    # krita         # graphics editor
-    # blender       # 3D creation suite
-    # aseprite      
+    x-related = [
+      xkb-switch
+      xorg.xkbcomp
+      xss-lock
+      xbindkeys
+      xorg.xmodmap
 
-    # Tools
-    lshw          # list hardware
-    mtr           # traceroute, ping
-    graphviz      # Graphs builder
-    sysstat       # performance tools
-    atool         # Archive helper
-    # gdb           # GNU Debugger
-    ntfs3g        # mounting ntfs stuff
-    ueberzug      # Ranger image previewer
-    shotgun       # Screenshots 
-    qt5.qttools   # QT interface
+      feh
+      rofi-unwrapped  # windows switcher
+      shotgun       # Screenshots 
+    ];
 
-    haskellPackages.graphmod
-    stylish-haskell
+    utils = [
+      ffmpeg        # convert audio, etc.
+      libav         # fork of ffmpeg
+      mp3val        # Repair mp3 songs
+      tldr
 
-    rofi-unwrapped  # windows switcher
-    texlive.combined.scheme-full
+      file
+      sysstat       # performance tools
+      atool         # Archive helper
+      gdb           # GNU Debugger
+      ueberzug      # Ranger image previewer
 
-    # X Windows
-    xbindkeys
-    xkb-switch
-    xorg.xkbcomp
-    xorg.xmodmap
-    xss-lock
+      niv           # Nix autoupdate
+      vimpager-latest      # print vim-highlited text
 
-    niv           # Nix autoupdate
+      texlive.combined.scheme-full
 
-    (let neuronSrc = builtins.fetchTarball "https://github.com/srid/neuron/archive/master.tar.gz";
-      in import neuronSrc {})
-    jq
+      httrack     # web-site mirroring
+      cshatag     # silent data corruption detecter
 
-    wine          # Windows layer emulator
-    pandoc        # Convert documents
+      youtube-dl
 
-    # (tor-browser-bundle-bin.override {
-    #   # Tor crashes without those
-    #   extraPrefs = ''
-    #     lockPref("browser.tabs.remote.autostart", false);
-    #     lockPref("browser.tabs.remote.autostart.2", false);
-    #   '';
-    # })
+      wine          # Windows layer emulator
+      pandoc        # Convert documents
 
-    steam
-    tdesktop
+      usbutils      # lsusb and similar
+      lshw          # list hardware
+      mtr           # traceroute, ping
+      ntfs3g        # mounting ntfs stuff
+      go-mtpfs      # connect Android devices
+      qt5.qttools   # QT interface
 
-    wpa_supplicant_gui
+      graphviz      # Graphs builder
+      haskellPackages.graphmod
 
-    # Broken
-    # python27Packages.howdoi
-    # diskonaut
+      stylish-haskell
+      wpa_supplicant_gui
 
-    firefox 
-    zathura jrnl anki
-    gimp imagemagick libreoffice
+      steam-run     # environment for games
+      tmsu          # file tagging
 
-    sxiv
-    # unetbootin      # ???
-    # wlroots
-  ];
+      imagemagick 
+      highlight
+      gron        # greppable JSON
+      jq          # neuron needs it
+
+      testdisk    # file recovery
+      extundelete # file recovery
+
+      mpdscribble
+
+      # ranger previewers
+      transmission      # .torrent
+      poppler_utils     # .pdf
+      djvulibre         # .djvu
+      ffmpegthumbnailer # .mkv | .mp4 | ...
+      calibre           # .epub
+      gitAndTools.gitflow
+    ]; 
+
+    # mpv mpc_cli   # music front-end  
+    apps = [
+      khal
+      steam
+      lynx            # web browser
+      mysql-workbench # Schema builder
+      # tdesktop        # Messaging app
+      gnome3.cheese   # webcam
+
+      gimp            # image manipulator!
+      libreoffice    
+
+      irssi         # IRC Channel
+      newsboat      # RSS Feed
+
+      deluge        # Torrent client
+
+      mpd           # music server
+      ncmpcpp       # music player
+
+      (zathura.override {
+        useMupdf = false;
+      })
+
+      sxiv        # Simple X Image Viewer
+        
+      jrnl        # diary
+      anki        # cards
+      joplin      # notes
+      neuron      # bigger notes
+    ];
+  in 
+    apps ++ utils ++ x-related;
 }

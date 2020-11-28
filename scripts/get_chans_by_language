@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -e
+
+usage="Usage: get_chans_by_language.sh [language]"
+example="language := pl | ru | en | ... "
+
+language="$1"
+
+if [ -z "$language" ]; then
+  echo $usage
+  echo $example
+  exit 1
+fi
+
+file=$(mktemp)
+webchans="https://raw.githubusercontent.com/ccd0/imageboards.json/gh-pages/imageboards.json"
+chanpath=$file/imageboards.json
+
+wget $webchans --directory-prefix $file 2>/dev/null
+
+chans=$(gron $chanpath | grep ".*language.*$language.*" | sed -E 's|json.([0-9]+).*|\1|g')
+
+for chan in $chans
+do
+  gron $chanpath | grep "json.$chan..url"
+done
+
+rm $chanpath
+rmdir $file

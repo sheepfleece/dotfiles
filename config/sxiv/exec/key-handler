@@ -4,12 +4,14 @@ while read file
 do
   case "$1" in
   "r")
-    convert -rotate 90 "$file" "$file" ;;
+    convert -rotate 90 -- "${file}" "${file}" ;;
   "R")
-    convert -rotate -90 "$file" "$file" ;;
+    convert -rotate -90 -- "${file}" "${file}" ;;
   "y")
-    echo -n "$file" | xclip -selection clipboard ;;
+    readlink -f -- "${file}" | xclip -selection clipboard ;;
   "d")
-    rm -- "$file" ;;
+    rm -- "${file}" ;;
+  "t")
+    telegram-desktop -sendpath "$(readlink -f -- "${file}")" 1>/dev/null 2>&1;;
   esac
 done

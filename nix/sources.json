@@ -1,4 +1,28 @@
 {
+    "gruvbox": {
+        "branch": "master",
+        "description": "Retro groove color scheme for Vim",
+        "homepage": "",
+        "owner": "morhetz",
+        "repo": "gruvbox",
+        "rev": "bf2885a95efdad7bd5e4794dd0213917770d79b7",
+        "sha256": "0576sqzljal3k8rsnbmcvlsk4ywg1vfgkxkvrv2zac2d5wwa9i8z",
+        "type": "tarball",
+        "url": "https://github.com/morhetz/gruvbox/archive/bf2885a95efdad7bd5e4794dd0213917770d79b7.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "indentLine": {
+        "branch": "master",
+        "description": "A vim plugin to display the indention levels with thin vertical lines",
+        "homepage": "",
+        "owner": "Yggdroot",
+        "repo": "indentLine",
+        "rev": "9662ef8f0443211b11fd87919343d12179bca548",
+        "sha256": "1mdbppz3xb8dzbw61fcv3gn3ad4hgia9i5s96vyw5frwxlkfyqpm",
+        "type": "tarball",
+        "url": "https://github.com/Yggdroot/indentLine/archive/9662ef8f0443211b11fd87919343d12179bca548.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "kmonad": {
         "branch": "master",
         "description": "An advanced keyboard manager",
@@ -47,6 +71,18 @@
         "url": "https://github.com/NixOS/nixpkgs-channels/archive/289466dd6a11c65a7de4a954d6ebf66c1ad07652.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
+    "quick-scope": {
+        "branch": "master",
+        "description": "Lightning fast left-right movement in Vim",
+        "homepage": "",
+        "owner": "unblevable",
+        "repo": "quick-scope",
+        "rev": "64a5e6f9791e75f4d87b176d5c11f31041aa4169",
+        "sha256": "1b1s8jmfip40s9m466c78jczp22dq2brbsnmdaz7gc1fgxyb5858",
+        "type": "tarball",
+        "url": "https://github.com/unblevable/quick-scope/archive/64a5e6f9791e75f4d87b176d5c11f31041aa4169.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "startuptime.vim": {
         "branch": "master",
         "description": "Breakdown Vim's --startuptime output",
@@ -59,6 +95,54 @@
         "url": "https://github.com/tweekmonster/startuptime.vim/archive/dfa57f522d6f61793fe5fea65bca7484751b8ca2.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
+    "vim-bookmarks": {
+        "branch": "master",
+        "description": "Vim bookmark plugin",
+        "homepage": "http://www.vim.org/scripts/script.php?script_id=4893",
+        "owner": "MattesGroeger",
+        "repo": "vim-bookmarks",
+        "rev": "3adeae10639edcba29ea80dafa1c58cf545cb80e",
+        "sha256": "1ikgs5cnqs9bhr8fqan8hg14px1j331l0b51yhnx00rmj4lr44bm",
+        "type": "tarball",
+        "url": "https://github.com/MattesGroeger/vim-bookmarks/archive/3adeae10639edcba29ea80dafa1c58cf545cb80e.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "vim-cool": {
+        "branch": "master",
+        "description": "A very simple plugin that makes hlsearch more useful.",
+        "homepage": "",
+        "owner": "romainl",
+        "repo": "vim-cool",
+        "rev": "27ad4ecf7532b750fadca9f36e1c5498fc225af2",
+        "sha256": "1in44gf7hs978nc9328zh1kj3jh04kcinw0m8spcbgj079782sg8",
+        "type": "tarball",
+        "url": "https://github.com/romainl/vim-cool/archive/27ad4ecf7532b750fadca9f36e1c5498fc225af2.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "vim-farout": {
+        "branch": "master",
+        "description": "Dark retro base16 theme for gvim and 24-bit color terminals",
+        "homepage": null,
+        "owner": "fcpg",
+        "repo": "vim-farout",
+        "rev": "3975c275a01224db29247cb61a67111ec3729f12",
+        "sha256": "1k3i5g9x1ygiz2lq6nzwp5dy43f13s298vf8hkkrrd8vs74c90qq",
+        "type": "tarball",
+        "url": "https://github.com/fcpg/vim-farout/archive/3975c275a01224db29247cb61a67111ec3729f12.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "vim-haskell": {
+        "branch": "master",
+        "description": "🍛 Haskell support for Vim",
+        "homepage": "",
+        "owner": "axelf4",
+        "repo": "vim-haskell",
+        "rev": "c93af75a7d21ac8834e0b7aa249bd9d57cedf7c7",
+        "sha256": "0w9j73z7jvn0xail30rmvbka6bck1f40vf73nb0kqxakpwxf8wc2",
+        "type": "tarball",
+        "url": "https://github.com/axelf4/vim-haskell/archive/c93af75a7d21ac8834e0b7aa249bd9d57cedf7c7.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "vim-haskellFold": {
         "branch": "master",
         "description": "Vim plugin providing folding for haskell, displaying type signatures",
@@ -69,6 +153,18 @@
         "sha256": "0hdw0535d59zmfcg0ly9krkk7gyz20yy9013v20llnf748m28ada",
         "type": "tarball",
         "url": "https://github.com/sheepfleece/vim-haskellFold/archive/9d3b87dd1d9ede03de62a37e1411a8d35e765700.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "vim-hoogle": {
+        "branch": "master",
+        "description": "Vim plugin used to query hoogle, the haskell search engine",
+        "homepage": "http://www.vim.org/scripts/script.php?script_id=2672",
+        "owner": "Twinside",
+        "repo": "vim-hoogle",
+        "rev": "871d104c92e33cb238506f2805f1652561978cc8",
+        "sha256": "17qvi57g72ijgk7nczczli3kcphvdf625fzqbqcmqpsawgvfd07n",
+        "type": "tarball",
+        "url": "https://github.com/Twinside/vim-hoogle/archive/871d104c92e33cb238506f2805f1652561978cc8.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "vim-move": {
@@ -93,6 +189,54 @@
         "sha256": "1by56rflr0bmnjvcvaa9r228zyrmxwfkzkclxvdfscm7l7n7jnmh",
         "type": "tarball",
         "url": "https://github.com/jremmen/vim-ripgrep/archive/ec87af6b69387abb3c4449ce8c4040d2d00d745e.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "vim-signature": {
+        "branch": "master",
+        "description": "Plugin to toggle, display and navigate marks",
+        "homepage": null,
+        "owner": "kshenoy",
+        "repo": "vim-signature",
+        "rev": "6bc3dd1294a22e897f0dcf8dd72b85f350e306bc",
+        "sha256": "08m5dg77yavria7n7iajkj4kqaw848763680003j2gbrjlhpprpm",
+        "type": "tarball",
+        "url": "https://github.com/kshenoy/vim-signature/archive/6bc3dd1294a22e897f0dcf8dd72b85f350e306bc.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "vim-smoothie": {
+        "branch": "master",
+        "description": "Smooth scrolling for Vim done right🥤",
+        "homepage": "",
+        "owner": "psliwka",
+        "repo": "vim-smoothie",
+        "rev": "d3de4fbd7a9331b3eb05fa632611ebd34882cc83",
+        "sha256": "1bsqnz02jaydr92mmcrdlva4zxs28zgxwgznr2bwk4wnn26i54p6",
+        "type": "tarball",
+        "url": "https://github.com/psliwka/vim-smoothie/archive/d3de4fbd7a9331b3eb05fa632611ebd34882cc83.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "vim-textobj-line": {
+        "branch": "master",
+        "description": "Vim plugin: Text objects for the current line",
+        "homepage": "http://www.vim.org/scripts/script.php?script_id=3886",
+        "owner": "kana",
+        "repo": "vim-textobj-line",
+        "rev": "0a78169a33c7ea7718b9fa0fad63c11c04727291",
+        "sha256": "0mppgcmb83wpvn33vadk0wq6w6pg9cq37818d1alk6ka0fdj7ack",
+        "type": "tarball",
+        "url": "https://github.com/kana/vim-textobj-line/archive/0a78169a33c7ea7718b9fa0fad63c11c04727291.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "vimroom": {
+        "branch": "master",
+        "description": "Simulating a vaguely WriteRoom-like environment in Vim.",
+        "homepage": "https://mikewest.github.io/vimroom/ ",
+        "owner": "mikewest",
+        "repo": "vimroom",
+        "rev": "b9d1fa7d460dac878cbc8c945a45439d92ce0cb2",
+        "sha256": "083ppipc7qkzh9bgnyaxd2m2lrji5mrhd69ixlnbxbiwmav9r6bx",
+        "type": "tarball",
+        "url": "https://github.com/mikewest/vimroom/archive/b9d1fa7d460dac878cbc8c945a45439d92ce0cb2.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     }
 }

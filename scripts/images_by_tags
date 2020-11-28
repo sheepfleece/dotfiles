@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -e 
+
+usage="Usage: images_by_tags [query]"
+
+query="$1"
+
+if [ -z "${query}" ]; then
+  echo $usage
+  exit 1
+fi
+
+
+tmsu files "${query}" | sxiv -tio -- - 1>/dev/null 2>&1

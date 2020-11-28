@@ -1,0 +1,18 @@
+#!/usr/bin/env bash 
+
+set -e 
+
+usage="Usage: choose_images_telegram [query]"
+
+query="$1"
+
+if [ -z "${query}" ]; then
+  echo $usage
+  exit 1
+fi
+
+selected=$(tmsu files "${query}" | sxiv -tio -- -)
+
+if ! [ -z "${selected}" ]; then
+  telegram-desktop -sendpath $(readlink -f -- ${selected}) 1>/dev/null 2>&1
+fi

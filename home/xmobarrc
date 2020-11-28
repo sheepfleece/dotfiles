@@ -4,12 +4,13 @@ Config
   -- #84a0c6  - good
   -- #e2a478  - average
   -- #e27878  - bad 
+
   , bgColor = "#1c1c1c"
   , fgColor = "#d2d4de"
 
   , allDesktops = True
   , persistent  = False
-  , template = "| <fc=#84a0c6>%XMonadLog%</fc> | %battery% | %touch% | %bright% | %coretemp% | %alsa:default:Master%| %wlp2s0wi%%sh%%dynnetwork% | %shuf% }{| %date% | %kbd% |"
+  , template = "| <fc=#84a0c6>%XMonadLog%</fc> | %battery% | %touch% | %bright% | %alsa:default:Master%| %wlp2s0wi%%sh%%dynnetwork% | %shuf% }{| %date% | %kbd% |"
   , commands = 
   [ Run Kbd [("by(latin)", "BY"), ("ru", "RU")]
   , Run Date "<fc=#84a0c6>%d/%m/%y</fc> (%a) <fc=#e2a478>%T</fc>" "date" 10
@@ -71,7 +72,7 @@ Config
 
   , Run Com "sh" 
     [ "-c"
-    , "sed '/^$/d' '/home/sheep/Documents/Bel.md' | sed '/^[?*].*/d' | shuf -n 1 | sed 's/--.*$//'"
+    , "sed '/^$/d' '/home/sheep/Documents/Bel.md' | sed '/^[?#*].*/d' | shuf -n 1 | sed 's/--.*$//'"
     ] "shuf" 150
 
   , Run Com "sh" 

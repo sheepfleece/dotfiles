@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -e
+
+usage="Usage: download_links [website]"
+
+website="$1"
+
+if [ -z "$website" ]; then
+  echo $usage
+  exit 1
+fi
+
+lynx -dump -listonly "$website" | grep -o "http.*" | wget --page-requisites --convert-links -e robots=off -i - --connect-timeout=10

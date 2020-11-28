@@ -1,22 +1,35 @@
 function fish_prompt
-  if test "$status" != "0" 
-    set_color e27878
-    echo -n '!'
+  set status_before $status
+
+
+  set_color white ; echo -n [
+
+  set dir (basename (pwd))
+  set_color green ; echo -n "$dir"
+
+
+  set branch (git rev-parse --abbrev-ref HEAD 2>/dev/null)
+  if test -n "$branch"
+    set_color white ; echo -n :
+    set_color green ; echo -n "$branch"
   end
+
+  set_color white ; echo -n ]
+
+  if test "$status_before" != "0" 
+    set_color e27878 ; echo -n 'ᚧ'
+  end
+
   if jobs -q
-    set_color e27878
-    echo -n '★'
+    set_color e27878 ; echo -n 'ᛃ'
   end
   if test "$IN_NIX_SHELL" = "impure" 
-    set_color 84a0c6
-    prompt_echo 'λ'
+    set_color 84a0c6 ; prompt_echo 'λ'
   else if test "IN_NIX_SHELL" = "pure"
-    set_color e27878
-    prompt_echo 'λ'
+    set_color e27878 ; prompt_echo 'λ'
   else 
-    set_color normal
-    prompt_echo '$'
-  end
+    set_color normal ; prompt_echo '$'
+  end 
 end
 
 function echo_replicate --description "Echo the character for each running instance of a shell"  

@@ -1,6 +1,6 @@
 #!/bin/sh
 
-hotkeysRC="/home/sheep/.config/kglobalshortcutsrc"
+hotkeysRC="~/.config/kglobalshortcutsrc"
 
 # Remove application launching shortcuts.
 sed -i 's/_launch=[^,]*/_launch=none/g' $hotkeysRC

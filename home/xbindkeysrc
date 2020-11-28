@@ -58,10 +58,10 @@
    XF86MonBrightnessDown
 
 # Screenshots
-"cd Pictures/screenshots && shotgun"
+"cd ~/Pictures/screenshots && shotgun"
   Print
 
-"cd Pictures/screenshots && shotgun --id `xdotool getactivewindow`"
+"cd ~/Pictures/screenshots && shotgun --id `xdotool getactivewindow`"
   Control + Print
 
 # Touchpad

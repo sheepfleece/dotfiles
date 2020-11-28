@@ -73,8 +73,7 @@ myAdditionalKeys =
   , ((myModMask, xK_p), spawn "rofi -m -4 -show run")
   , ((myModMask .|. shiftMask, xK_p), spawn "rofi -m -4 -show window")
   , ((myModMask, xK_i), withFocused minimizeWindow)
-  , ((myModMask .|. shiftMask, xK_i)
-    , withLastMinimized maximizeWindowAndFocus)
+  , ((myModMask .|. shiftMask, xK_i), withLastMinimized maximizeWindowAndFocus)
   ]
 
 
@@ -98,8 +97,8 @@ myManageHook = composeAll $
   , (className =? "kwalletd5")      --> doFloat
 
   ] ++
-  [ "TelegramDesktop", "discord"] `sendTo` Chats ++
-  [ "mpv", "tixati", "Tixati" ] `sendTo` Media
+  [ "TelegramDesktop", "discord" ] `sendTo` Chats ++
+  [ "mpv", "tixati", "Tixati", "deluge", "Deluge" ] `sendTo` Media
   where
     sendTo :: [String] -> MyWorkspaces -> [ManageHook]
     sendTo names ws = map (\name -> className =? name --> doShift (show ws)) names

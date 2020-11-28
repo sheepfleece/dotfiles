@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -e
+
+usage="name_by_hash [files]"
+
+if [ -z "$1" ]; then
+  echo "${usage}"
+  exit 1
+fi
+
+for file in "$@"
+do
+  if ! [ -f "${file}" ]; then
+    echo "File ${file} does not exists or a directory. Skipping."
+    continue
+  fi
+  old_name=$(basename -- "${file}")
+  extension=$([[ "${old_name}" = *.* ]] && echo ".${old_name##*.}" || echo '')
+
+  sha=$(sha256sum -- "${file}" | cut -c 1-24 )
+  new_name="${sha}${extension}"
+
+  dir=$(dirname -- "${file}")
+  
+  if [ "${new_name}" != "${old_name}" ]; then
+    mv -v -- "${file}" "${dir}/${new_name}" 
+  fi
+done
+

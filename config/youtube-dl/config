@@ -1,0 +1,16 @@
+# OPTIONS
+--ignore-errors
+--no-overwrites
+
+# Geo Restriction
+--geo-bypass
+
+# Subtitle Options 
+--write-auto-sub
+--embed-subs
+--sub-lang be,en
+
+--yes-playlist
+--cookies ~/.config/youtube-dl/cookies.txt
+
+--output ~/Videos/%(playlist_title)s/%(title)s.%(ext)s
