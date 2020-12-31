@@ -307,6 +307,7 @@ handle_mime() {
                 local highlight_format='ansi'
             fi
             env HIGHLIGHT_OPTIONS="${HIGHLIGHT_OPTIONS}" highlight \
+                --style="/home/sheep/dotfiles/files/gruvbox-dark-soft.theme" \
                 --out-format="${highlight_format}" \
                 --force -- "${FILE_PATH}" && exit 5
             env COLORTERM=8bit bat --color=always --style="plain" \

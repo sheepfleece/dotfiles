@@ -78,19 +78,6 @@
 "light -U 10"
    Mod4 + minus
 
-# Increase volume
-"pactl set-sink-volume @DEFAULT_SINK@ +3000"
-   Mod4 + 0
-
-# Decrease volume
-"pactl set-sink-volume @DEFAULT_SINK@ -3000"
-   Mod4 + 9
-
-# Mute volume
-"pactl set-sink-mute @DEFAULT_SINK@ toggle"
-   Mod4 + 8
-
-
 "if [ `setxkbmap -query | grep layout | grep -o ru | wc -l` -eq 1 ]; then setxkbmap -layout 'by(latin),by'; else setxkbmap -layout 'by(latin),ru'; fi"
     Alt + equal 
   

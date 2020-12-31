@@ -1,4 +1,16 @@
 {
+    "bclose.vim": {
+        "branch": "master",
+        "description": "The BClose Vim plugin for deleting a buffer without closing the window",
+        "homepage": "http://vim.wikia.com/wiki/Deleting_a_buffer_without_closing_the_window",
+        "owner": "rbgrouleff",
+        "repo": "bclose.vim",
+        "rev": "99018b4a2dd18aea1cbd3aa23565b01a0f8c5b73",
+        "sha256": "09a7g0nxn8cbnfz6za8q1p46kb5zbvxl80077hrjpnx4xc82xn2h",
+        "type": "tarball",
+        "url": "https://github.com/rbgrouleff/bclose.vim/archive/99018b4a2dd18aea1cbd3aa23565b01a0f8c5b73.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "gruvbox": {
         "branch": "master",
         "description": "Retro groove color scheme for Vim",
@@ -71,6 +83,18 @@
         "url": "https://github.com/NixOS/nixpkgs-channels/archive/289466dd6a11c65a7de4a954d6ebf66c1ad07652.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
+    "nvim-gdb": {
+        "branch": "master",
+        "description": "Neovim thin wrapper for GDB, LLDB, PDB/PDB++ and BashDB",
+        "homepage": "",
+        "owner": "sakhnik",
+        "repo": "nvim-gdb",
+        "rev": "a0e6003548ae0f89101347b483a3df773d24e6ed",
+        "sha256": "1s1wsa3hmafdfh4zd97imr5a0yiqq9v82f6aih1ha9bz503q4mg2",
+        "type": "tarball",
+        "url": "https://github.com/sakhnik/nvim-gdb/archive/a0e6003548ae0f89101347b483a3df773d24e6ed.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "quick-scope": {
         "branch": "master",
         "description": "Lightning fast left-right movement in Vim",
@@ -81,6 +105,18 @@
         "sha256": "1b1s8jmfip40s9m466c78jczp22dq2brbsnmdaz7gc1fgxyb5858",
         "type": "tarball",
         "url": "https://github.com/unblevable/quick-scope/archive/64a5e6f9791e75f4d87b176d5c11f31041aa4169.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
+    "ranger.vim": {
+        "branch": "master",
+        "description": "Ranger integration in vim and neovim",
+        "homepage": null,
+        "owner": "francoiscabrol",
+        "repo": "ranger.vim",
+        "rev": "91e82debdf566dfaf47df3aef0a5fd823cedf41c",
+        "sha256": "0i2d88yyfjv4gn3zn7jzv5pf94vzllvxmnmi3hdjddrhl2xppsza",
+        "type": "tarball",
+        "url": "https://github.com/francoiscabrol/ranger.vim/archive/91e82debdf566dfaf47df3aef0a5fd823cedf41c.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "startuptime.vim": {

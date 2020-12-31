@@ -12,21 +12,21 @@
     "di"   = "df -ih";
     "cp"   = "cp -iv";
     "mv"   = "mv -iv";
+
+    "smv"  = "mv --no-clobber -v";
+    "scat" = "cat -v";
+
     "rm"   = "rm -v";
     "mkd"  = "mkdir -pv";
     "info" = "info --vi-keys";
     "tail" = "less +F";
-    "tree" = "exa --tree";
     "fg"   = "fg 1>/dev/null 2>&1";
-    "cat"  = "bat";
-    "news" = "newsboat";
 
     "j"    = "pop";   # j-pop, yes
     "jj"   = "pop 2";
     "jjj"  = "pop 3";
     "jjjj" = "pop 4";
     "stopwatch" = "time read";
-
 
     cbuild="cabal build --enable-tests --enable-benchmarks --write-ghc-environment-files=always -O0";
     ctest="cabal test --enable-tests --test-show-details=direct -O0";
@@ -42,7 +42,6 @@
   programs.fish.shellAbbrs = {
     "ns"   = "nix-shell --command fish";
 
-    "nix-env" = "no";
     "-"    = "cd -";
     "nr"   = "sudo nixos-rebuild switch";
     "ne"   = "sudo -E vim /etc/nixos"; # sudoedit doesn't open directories
@@ -87,7 +86,9 @@
     # list sizes
     "lss"  = "du -sh * | sort -rh | column -t";
 
-    "yd"   = "youtube-dl";
+    "yd"   = ''youtube-dl'';
+    "yda"  = ''youtube-dl --extract-audio --audio-format "best" --audio-quality 0'';
+    "gd"   = ''gallery-dl'';
 
     # query system-wide packages
     "nq"   = ''
@@ -97,6 +98,7 @@
 
   programs.fish.shellInit = ''
     bind \co 'fg 1>&2 2>/dev/null ; commandline -f repaint' 
+    bind \cw backward-kill-word
 
     set -x DIRENV_LOG_FORMAT ""
     set -x fish_color_error 'e27878'
@@ -108,5 +110,17 @@
     set FZF_DEFAULT_COMMAND 'fd --type f'
     # set PATH $HOME/dotfiles/scripts $PATH
     eval (direnv hook fish)
+
+    function prefix_line
+        set -l cmd (commandline)
+        set -l line (commandline -L)
+        set cmd[$line] "$argv $cmd[$line]"
+        commandline -r $cmd
+    end
+
+    # Here we bind control-g to insert "command "
+    bind \cg 'prefix_line command'
+    # And control-t to insert sudo
+    bind \ct 'prefix_line sudo'
   '';
 }

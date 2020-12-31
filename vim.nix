@@ -7,7 +7,6 @@ let
   nixpkgsPlugins = with vimPlugins; [
     ReplaceWithRegister # gr<object>
     fzf-vim fzfWrapper  # :Files, :Rg, :Colors
-    nerdtree            # :NERDTreeToggle 
     vim-commentary      # gc<motion>
     vim-easy-align      # ga<object><char>
     vim-eunuch          # :Delete, :Move, :Rename
@@ -35,7 +34,7 @@ let
     vim-colors-solarized
     vim-colorschemes
 
-    # vim-polyglot
+    vim-polyglot
     
 
     # Haskell IDE
@@ -55,7 +54,9 @@ let
 
   nivPlugins = map mkPlugin [
     "startuptime.vim"
-    "neuron.vim"      
+    # "neuron.vim"    # takes hours to start
+    "ranger.vim"
+    "bclose.vim"
 
     "indentLine"
     "vim-smoothie"     # Smooth-scrolling for <C-d> <C-u>
@@ -71,6 +72,7 @@ let
     "gruvbox"
     "vim-farout"
 
+    "nvim-gdb"
     # Unused now (So I won't forget later)
     # "vim-bookmarks"
     # "vim-haskell"
@@ -289,13 +291,13 @@ let
       customRC = '' 
         let loaded_netrwPlugin = 1
         au ColorScheme farout hi Comment ctermfg=242 guifg=#6b7089
-        source ~/.vimrc
+        source ~/.config/nvim/init.vim
         source ${coc-default-config}
         source ${macro-repeat}
       '';
       packages.myVimPackage = {
         start = nixpkgsPlugins ++ nivPlugins;
-        opt = [ ];
+        opt   = [];
       };
     };
   };

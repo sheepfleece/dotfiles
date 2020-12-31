@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -e 
+
+usage="Usage: save_images_with_tags [tags] [images]"
+
+tags="$1"
+
+if [ -z "${tags}" ]; then
+  echo $usage
+  exit 1
+fi
+
+tmsu tag --tags "${tags}" "${@:2}"

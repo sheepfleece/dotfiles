@@ -6,9 +6,9 @@
 
   home.packages = with pkgs; let
 
-    neuron = let 
-      neuronSrc = builtins.fetchTarball "https://github.com/srid/neuron/archive/master.tar.gz";
-    in import neuronSrc {};
+    # neuron = let 
+    #   neuronSrc = builtins.fetchTarball "https://github.com/srid/neuron/archive/master.tar.gz";
+    # in import neuronSrc {};
 
     graphics = [
       krita         # graphics editor
@@ -26,32 +26,38 @@
 
       feh
       rofi-unwrapped  # windows switcher
-      shotgun       # Screenshots 
+      shotgun         # Screenshots 
     ];
 
     utils = [
+      doas
+      SDL_mixer # for fheroes2
+      tdesktop
+      gnome3.gnome-sound-recorder
+      modemmanager
+      networkmanager
+
+      exa           # ls replacement in Rust
+      libxml2       # xmllint
       ffmpeg        # convert audio, etc.
       libav         # fork of ffmpeg
-      mp3val        # Repair mp3 songs
-      tldr
 
-      file
-      sysstat       # performance tools
+      tldr          # man with examples
+      file          # types of files
+      sysstat       # iostat, pidstat
       atool         # Archive helper
-      gdb           # GNU Debugger
       ueberzug      # Ranger image previewer
 
       niv           # Nix autoupdate
-      vimpager-latest      # print vim-highlited text
+      vimpager-latest   # print vim-highlited text
 
       texlive.combined.scheme-full
 
-      httrack     # web-site mirroring
-      cshatag     # silent data corruption detecter
+      gitAndTools.gitflow # opinionated branch manager
 
-      youtube-dl
+      youtube-dl  # download video
+      gallery-dl  # download photo
 
-      wine          # Windows layer emulator
       pandoc        # Convert documents
 
       usbutils      # lsusb and similar
@@ -62,64 +68,80 @@
       qt5.qttools   # QT interface
 
       graphviz      # Graphs builder
-      haskellPackages.graphmod
+      haskellPackages.graphmod # Haskell Modules graphs
 
-      stylish-haskell
-      wpa_supplicant_gui
+      stylish-haskell    # haskell code prettifier
+      wpa_supplicant_gui # wifi connecter
 
-      steam-run     # environment for games
       tmsu          # file tagging
 
-      imagemagick 
-      highlight
-      gron        # greppable JSON
-      jq          # neuron needs it
+      imagemagick  # reverse and edit image from terminal
 
-      testdisk    # file recovery
-      extundelete # file recovery
+      highlight    # ???
+      gron        # greppable JSON
+      ripgrep-all # greppable pdfs, images, subtitles, all
 
       mpdscribble
+      gnupg
 
       # ranger previewers
       transmission      # .torrent
       poppler_utils     # .pdf
       djvulibre         # .djvu
       ffmpegthumbnailer # .mkv | .mp4 | ...
-      calibre           # .epub
-      gitAndTools.gitflow
+
+      parallel-full # execute jobs in parallel 
+      wine          # Windows layer emulator
+      winetricks
+      steam-run     # environment for games
+      kid3        # audio tagger
     ]; 
 
-    # mpv mpc_cli   # music front-end  
-    apps = [
-      khal
+    unusedUtils = [
+      calibre           # .epub
+      jq          # neuron needs it
+
+      gdb           # GNU Debugger
+      httrack     # web-site mirroring
+      cshatag     # silent data corruption detecter
+      mp3val        # Repair mp3 songs
+      unixtools.xxd
+    ];
+
+    games = [
       steam
-      lynx            # web browser
-      mysql-workbench # Schema builder
-      # tdesktop        # Messaging app
-      gnome3.cheese   # webcam
+    ];
 
-      gimp            # image manipulator!
-      libreoffice    
-
-      irssi         # IRC Channel
-      newsboat      # RSS Feed
-
+    apps = [
+      lynx          #  web browser
+      gimp          #  image manipulator!
       deluge        # Torrent client
-
       mpd           # music server
       ncmpcpp       # music player
-
       (zathura.override {
         useMupdf = false;
       })
-
       sxiv        # Simple X Image Viewer
-        
-      jrnl        # diary
       anki        # cards
+
+    ];
+    unusedApps = [
+      jq neuron      # bigger notes
+
+      khal          #  calendar
+      libreoffice   #  documents and presentations
+      gnome3.cheese #  webcam
+      jitsi         #  webconferences
+      jrnl        # diary
       joplin      # notes
-      neuron      # bigger notes
+      irssi         # IRC Channel
+      newsboat      # RSS Feed
+      mysql-workbench #  Schema builder
+      testdisk        #  file recovery
+      extundelete     #  file recovery
+      mpv 
+      mpc_cli     
     ];
   in 
-    apps ++ utils ++ x-related;
+    apps ++ games ++ utils ++ x-related;
 }

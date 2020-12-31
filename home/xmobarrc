@@ -1,23 +1,23 @@
 Config 
   { font =    "xft:Bitstream Vera Sans Mono:size=12:antialias=true"
 
-  -- #84a0c6  - good
-  -- #e2a478  - average
-  -- #e27878  - bad 
+  -- #458588  - good
+  -- #d79921  - average
+  -- #cc241d  - bad 
 
-  , bgColor = "#1c1c1c"
-  , fgColor = "#d2d4de"
+  , bgColor = "#282828"
+  , fgColor = "#ebdbb2"
 
   , allDesktops = True
   , persistent  = False
-  , template = "| <fc=#84a0c6>%XMonadLog%</fc> | %battery% | %touch% | %bright% | %alsa:default:Master%| %wlp2s0wi%%sh%%dynnetwork% | %shuf% }{| %date% | %kbd% |"
+  , template = "| <fc=#458588>%XMonadLog%</fc> | %battery% | %bright% | %alsa:default:Master%| %wlp2s0wi%%sh%%dynnetwork% | %shuf% }{| %date% | %kbd% |"
   , commands = 
   [ Run Kbd [("by(latin)", "BY"), ("ru", "RU")]
-  , Run Date "<fc=#84a0c6>%d/%m/%y</fc> (%a) <fc=#e2a478>%T</fc>" "date" 10
+  , Run Date "<fc=#458588>%d/%m/%y</fc> (%a) <fc=#d79921>%T</fc>" "date" 10
   , Run Battery 
     [ "--template", "Battery: <acstatus>"
     , "--Low", "35", "--High", "60"
-    , "--low", "#e27878", "--high", "#84a0c6", "--normal", "#e2a478"
+    , "--low", "#cc241d", "--high", "#458588", "--normal", "#d79921"
     , "--" -- battery specific options
       , "-o", "<left>"
       , "-O", "<left>…"
@@ -25,38 +25,38 @@ Config
     ] 10
   , Run CoreTemp 
     [ "--Low", "45", "--High", "70"
-    , "--low", "#84a0c6", "--normal", "#e2a478", "--high", "#e27878"
+    , "--low", "#458588", "--normal", "#d79921", "--high", "#cc241d"
     , "--template", "Temp: <core0>"
     ] 10
   , Run DynNetwork 
     [ "--template", ": <tx>/<rx>"
-    , "--normal", "#84a0c6"
-    , "--high", "#e2a478"
+    , "--normal", "#458588"
+    , "--high", "#d79921"
     , "--Low", "-1", "--High", "10000"
     ] 50
   , Run Wireless "wlp2s0" 
     [ "--template", "<essid>(<quality>)"
-    , "--normal", "#84a0c6", "--low", "#e27878"
+    , "--normal", "#458588", "--low", "#cc241d"
     , "--Low", "40", "--High", "110"
     ] 50
   , Run Brightness
     [ "--template", "Brightness: <percent>"
     , "--Low", "65", "--High", "75"
-    , "--low", "#84a0c6"
-    , "--normal", "#e2a478"
-    , "--high", "#e27878"
+    , "--low", "#458588"
+    , "--normal", "#d79921"
+    , "--high", "#cc241d"
     , "--" 
     , "-D", "intel_backlight"
     ] 50
   , Run Alsa "default" "Master"
-    [ "--normal", "#e2a478"
-    , "--low", "#84a0c6"
-    , "--high", "#e27878"
+    [ "--normal", "#d79921"
+    , "--low", "#458588"
+    , "--high", "#cc241d"
     , "--Low", "70", "--High", "150"
     , "--template", "Volume: <volume> <status>"
     , "--"
-      , "--onc", "#84a0c6"
-      , "--offc", "#e2a478"
+      , "--onc", "#458588"
+      , "--offc", "#d79921"
     ]
   , Run XMonadLog
   , Run MPD 
@@ -72,7 +72,7 @@ Config
 
   , Run Com "sh" 
     [ "-c"
-    , "sed '/^$/d' '/home/sheep/Documents/Bel.md' | sed '/^[?#*].*/d' | shuf -n 1 | sed 's/--.*$//'"
+    , "sed '/^$/d' '/home/sheep/Notes/Bel.md' | sed '/^[?#*].*/d' | shuf -n 1 | sed 's/--.*$//'"
     ] "shuf" 150
 
   , Run Com "sh" 

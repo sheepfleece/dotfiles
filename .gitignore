@@ -1,6 +1,6 @@
 secrets.nix
 hardware-configuration.nix
 mpdscribble.conf
-*.sw[pon]
+*.sw[klmnop]
 id_rsa
 irssi

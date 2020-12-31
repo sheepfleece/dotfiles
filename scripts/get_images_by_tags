@@ -12,4 +12,4 @@ if [ -z "${query}" ]; then
 fi
 
 
-tmsu files "${query}" | sxiv -tio -- - 1>/dev/null 2>&1
+tmsu files "${query}" | sxiv -tio -- - 

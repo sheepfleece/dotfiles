@@ -1,20 +1,5 @@
-" Colors & Themes
-" set termguicolors
-
-" The only problem I have with nord is the bluish background colour.
-" Eradicate.
-" au ColorScheme nord hi Normal              guifg =#d2d4de guibg=#1c1c1c
-" au ColorScheme nord hi LineNr              guifg =#d2d4de guibg=#1c1c1c
-" au ColorScheme nord hi CursorLineNr        guifg =#d2d4de guibg=#1c1c1c
-" au ColorScheme nord hi SignColumn          guifg =#d2d4de guibg=#1c1c1c
-" au ColorScheme nord hi SignatureMarkerText guifg =#d2d4de guibg=#1c1c1c
-au ColorScheme nord hi SignatureMarkText   ctermfg =1 ctermbg=234
-au ColorScheme iceberg hi SignatureMarkText   ctermfg =1 ctermbg=234
-
-set background=dark
-colorscheme iceberg
-
 " Sane defaults.
+set encoding=utf-8
 set history=9000
 set number relativenumber
 set splitbelow splitright
@@ -25,6 +10,7 @@ set scrolloff=8
 set hidden
 set formatoptions+=j
 filetype plugin on
+set linebreak
 
 set foldlevel=2
 
@@ -98,7 +84,6 @@ nnoremap <C-l> <C-w>l
 let mapleader = "m"
 
 
-
 " Copying and pasting
 noremap <space> "+
 
@@ -124,42 +109,7 @@ let i = 0
 while i < mapLen
     let ruChar = matchstr(rumap, ".", byteidx(rumap, i))
     let enChar = enmap[i]
-    "echo 'map '.ruChar.' '.enChar
     execute 'map '.ruChar.' '.enChar
     execute 'cmap '.ruChar.' '.enChar
     let i += 1
 endwhile
-
-
-map ў o
-map Ё \|
-cmap Ё \|
-
-" Plugins 
-
-" EasyAlign
-nmap ga <Plug>(EasyAlign)
-
-" Show bufferline
-let g:airline_section_x = ''
-let g:airline_section_y = ''
-let g:bufferline_echo = 0
-let g:airline_theme='minimalist'
-
-" IndentLine
-let g:indentLine_leadingSpaceChar = '·'
-let g:indentLine_leadingSpaceEnabled = 1
-
-" Colors for solarized theme
-let g:solarized_termcolors=256
-
-" Mark signatures
-let g:SignatureIncludeMarks = 'abcdefghijklmnoprstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
-
-" Toggle NERDTree 
-nnoremap <leader>t :NERDTreeToggle<CR>
-
-let g:qs_highlight_on_keys = ['f', 'F', 't', 'T']
-
-highlight QuickScopePrimary ctermfg=3 cterm=underline
-highlight QuickScopeSecondary ctermfg=1 cterm=underline

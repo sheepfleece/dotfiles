@@ -2,9 +2,7 @@
 {
   imports =
     [
-      ./scripts.nix
       ./mpv.nix
-      ./zathura.nix
       ./vim.nix
       ./fish.nix
       ./packages.nix

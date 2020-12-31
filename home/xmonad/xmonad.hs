@@ -47,6 +47,13 @@ data MyWorkspaces = Dev1
     | Book4
     | W1
     | W2
+    | W3
+    | W4
+    | W5
+    | W6
+    | W7
+    | W8
+    | W9
     deriving (Show, Eq, Bounded, Ord, Enum)
 
 -- Which keys are used for switching to a specific workspace
@@ -273,7 +280,7 @@ myConfig = kdeConfig
   , logHook            = myLogHook
   , manageHook         =
     -- =   insertPosition Below Newer
-    myManageHook <+> manageHook kdeConfig
+    myManageHook <+> manageHook kdeConfig -- <+> doF focusDown
   , focusFollowsMouse  = False
   , terminal           = "alacritty"
   } `additionalKeys` myAdditionalKeys

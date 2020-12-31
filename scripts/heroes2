@@ -1,0 +1,5 @@
+#!/bin/sh
+
+cd ~/Playground/Sources/cpp/fheroes2/demo 
+
+./fheroes2
