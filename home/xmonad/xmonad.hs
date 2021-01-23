@@ -1,6 +1,8 @@
 {-# LANGUAGE DeriveDataTypeable    #-}
 {-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE InstanceSigs          #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TupleSections         #-}
 
 import           XMonad                       hiding (Screen)
@@ -19,6 +21,7 @@ import           XMonad.Layout.Circle         (Circle (..))
 import           XMonad.Layout.LayoutModifier (ModifiedLayout)
 import           XMonad.Layout.Minimize
 import           XMonad.Layout.NoBorders
+import           XMonad.Layout.ResizableTile
 import           XMonad.Layout.Spacing
 import           XMonad.Layout.ThreeColumns
 import           XMonad.Util.EZConfig
@@ -32,7 +35,6 @@ import           Control.Applicative          ((<|>))
 import           Control.Concurrent
 import           Control.Monad                (when)
 import           Data.Foldable
-import qualified Data.List                    as L
 import           Data.Maybe
 import           Text.Read                    (readMaybe)
 
@@ -43,6 +45,9 @@ import           XMonad.Hooks.ManageHelpers
 
 import           Data.IORef
 import           System.IO.Unsafe             (unsafePerformIO)
+
+import           Data.Coerce                  (coerce)
+import qualified Data.List                    as L
 
 data MyWorkspaces
   = Dev1  | Dev2
@@ -76,6 +81,9 @@ myAdditionalKeys =
   ] ++
 
   [ ((myModMask, xK_c), sendMessage Killed >> withFocused killWindow)
+  , ((myModMask, xK_z), sendMessage MirrorShrink)
+  , ((myModMask, xK_a), sendMessage MirrorExpand)
+
   , ((myModMask, xK_Return), spawn "alacritty")
 
   , ((myModMask, xK_y), windows focusMaster)
@@ -89,6 +97,7 @@ myAdditionalKeys =
     Hide xmobar. Doesn't work when there are no windows.
    -}
   , ((myModMask, xK_o), sendMessage ToggleStruts)
+
 
   {-
     Rofi is used for navigating workspaces and opening applications.
@@ -163,11 +172,11 @@ notFilledWorkspace = do
 
 
 {-
-  Slightly configured Tall layout with
+  Slightly configured `ResizableTall` layout with
   boundaries on the number of master windows.
  -}
 newtype MyTall a = MyTall
-    { tall :: (Tall a)
+    { tall :: (ResizableTall a)
     }
     deriving (Show, Read)
 
@@ -182,29 +191,26 @@ instance Message Killed
   2. There can't be more master windows then windows on this workspace
  -}
 instance LayoutClass MyTall a where
-  pureLayout = pureLayout . tall
-  handleMessage mt@(MyTall (Tall nmaster delta frac)) msg
+  doLayout (MyTall rt) rect stack = (fmap . fmap . fmap) MyTall $ doLayout  rt rect stack
+  emptyLayout (MyTall rt) rect = (fmap . fmap . fmap) MyTall $ emptyLayout rt rect
+
+  pureMessage :: MyTall a -> SomeMessage -> Maybe (MyTall a)
+  pureMessage (MyTall rt) msg = coerce $ pureMessage rt msg
+
+  handleMessage :: MyTall a -> SomeMessage -> X (Maybe (MyTall a))
+  handleMessage (MyTall rt@(ResizableTall nmaster delta frac slaves)) msg
     | Just (IncMasterN d) <- fromMessage msg = Just <$> incmastern d
     | Just (Killed)       <- fromMessage msg = Just <$> kill
-    | otherwise                              = pure (pureMessage mt msg)
+    | otherwise                              = fmap MyTall <$> handleMessage rt msg
     where
       winNumA = withWindowSet (pure . L.length . integrate' . stack . workspace . current)
       applyBoundaries n = max 1 . min n
 
       kill =
-        winNumA >>= (\n -> pure $ MyTall (Tall (applyBoundaries (n-1) nmaster) delta frac))
+        winNumA >>= (\n -> pure $ MyTall (ResizableTall (applyBoundaries (n-1) nmaster) delta frac slaves))
       incmastern d =
-        winNumA >>= (\n -> pure $ MyTall (Tall (applyBoundaries n (d + nmaster)) delta frac))
+        winNumA >>= (\n -> pure $ MyTall (ResizableTall (applyBoundaries n (d + nmaster)) delta frac slaves))
 
-  {-
-    TODO: I forgot why it is handled like this.
-    Seems hacky.
-   -}
-  pureMessage (MyTall (Tall nmaster delta frac)) m
-      = resize <$> fromMessage m
-    where
-      resize Shrink = MyTall (Tall nmaster delta (max 0 $ frac-delta))
-      resize Expand = MyTall (Tall nmaster delta (min 1 $ frac+delta))
 
 
 type XScreen = Screen WorkspaceId (Layout Window) Window ScreenId ScreenDetail
@@ -253,12 +259,8 @@ myLogHook = withWindowSet $ \winSet ->
  -}
 layoutSymbol :: WindowSpace -> Char
 layoutSymbol ws
-  | description l == description Full
-    = if winNum `elem` [0, 1]
-        then '*'
-        else '!'
-  | description l == description threeCols
-    = '#'
+  | description l == description Full = if winNum `elem` [0, 1] then '*' else '!'
+  | description l == description threeCols = '#'
   | otherwise = ' '
   where
     l = layout ws
@@ -287,9 +289,9 @@ xmobarName n = go . L.take n
         padding side ++ str ++ padding (side + offset)
 
 {-
-   Saved layout for each workspace.
-   The layout is saved when `toggleFull` is used.
-   That means that initial values do not matter.
+   Saved layouts for toggling `Full` layout on each workspace.
+   The layout is first saved when `toggleFull` is used.
+   That means that initial values are not used.
  -}
 savedLayouts :: IORef [Layout Window]
 {-# NOINLINE savedLayouts #-}
@@ -333,7 +335,7 @@ myLayoutHook n
   $ avoidStruts $ tiled ||| Full ||| threeCols
 
 tiled :: MyTall a
-tiled = MyTall $ Tall nmaster delta ratio
+tiled = MyTall $ ResizableTall nmaster delta ratio []
 
 threeCols :: ThreeCol a
 threeCols = ThreeColMid nmaster delta ratio
@@ -360,7 +362,7 @@ myConfig = kdeConfig
   , manageHook         =
     {-
        `focusDown` is used for opening files in nvim and staying there.
-       I use it very rarely to make it optional (if it even can be made).
+       I use it very rarely to make it togglable (if it even can be made).
      -}
     myManageHook <+> manageHook kdeConfig -- <+> doF focusDown
   , focusFollowsMouse  = False
