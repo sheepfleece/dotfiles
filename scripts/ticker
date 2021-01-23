@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+TICKER="/home/sheep/.cache/ticker"
+QUOTES="/home/sheep/Notes/1.Quotes/*"
+FIRST="/home/sheep/.cache/ticker_wait"
+
+if [ -f "${TICKER}" ]; then
+  NEXT=$(cat -- "${TICKER}" | cut -c 30-)
+  if [ -z "${NEXT}" ]; then
+    rm -- "${TICKER}"
+    echo
+  else
+    if [ -f "${FIRST}" ]; then
+      sleep 3; rm "${FIRST}"
+    else
+      echo "${NEXT}" | tee -- "${TICKER}"
+    fi
+  fi
+else
+  TICKER_LINE=$(cat ${QUOTES} | sed '/^$/d' | sed '/^[?#*].*/d' | shuf -n 1 | sed 's|--.*$||')
+  echo "${TICKER_LINE}" | tee -- "${TICKER}"
+  touch "${FIRST}"
+fi
+

@@ -58,14 +58,17 @@
    XF86MonBrightnessDown
 
 # Screenshots
-"cd ~/Pictures/screenshots && shotgun"
+"shotgunx"
   Print
 
-"cd ~/Pictures/screenshots && shotgun --id `xdotool getactivewindow`"
+"cd ~/Pictures/screenshots && shotgun --id $(xdotool getactivewindow)"
   Control + Print
 
+"cd ~/Pictures/screenshots && shotgun --geometry $(xrect)"
+  Alt + Print
+
 # Touchpad
-"touchpad-toggle"
+"env touchpad-toggle"
   XF86Display
 
 # Another keyboard
@@ -79,7 +82,7 @@
    Mod4 + minus
 
 "if [ `setxkbmap -query | grep layout | grep -o ru | wc -l` -eq 1 ]; then setxkbmap -layout 'by(latin),by'; else setxkbmap -layout 'by(latin),ru'; fi"
-    Alt + equal 
+   Alt + equal   
   
 ##################################
 # End of xbindkeys configuration #

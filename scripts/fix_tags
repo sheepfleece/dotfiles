@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
+FILE="${1}"
+
+function extract_tag() {
+  local TAG="${1}"
+  eyeD3 -- "${FILE}" | grep "${TAG}" | sed "s|${TAG}: ||g" \
+    | iconv -f utf-8 -t iso-8859-1 | iconv -f windows-1251 -t utf-8
+}
+
+function write_tags() {
+  ALBUM=$(extract_tag 'album')
+  ARTIST=$(extract_tag 'artist')
+  TITLE=$(extract_tag 'title')
+  eyeD3 --v2             \
+    --album "${ALBUM}"   \
+    --artist "${ARTIST}" \
+    --title "${TITLE}"   \
+    --encoding utf8      \
+    -- "${FILE}" 1>/dev/null 2>&1
+}
+
+function remove_old_tags() {
+  eyeD3 --remove-v1 -- "${FILE}" 1>/dev/null 2>&1
+}
+
+write_tags
+remove_old_tags
+

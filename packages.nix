@@ -9,13 +9,18 @@
     # neuron = let 
     #   neuronSrc = builtins.fetchTarball "https://github.com/srid/neuron/archive/master.tar.gz";
     # in import neuronSrc {};
+    
 
     graphics = [
+      grafx2
       krita         # graphics editor
       blender       # 3D creation suite
       aseprite      
       darktable
+      obs-studio
     ];
+
+    xrect = pkgs.callPackage ./pkgs/xrect {};
 
     x-related = [
       xkb-switch
@@ -23,22 +28,23 @@
       xss-lock
       xbindkeys
       xorg.xmodmap
+      xrect
 
       feh
       rofi-unwrapped  # windows switcher
       shotgun         # Screenshots 
+      kdeApplications.kmag # Screen magnifier
     ];
 
     utils = [
-      doas
-      SDL_mixer # for fheroes2
-      tdesktop
-      gnome3.gnome-sound-recorder
-      modemmanager
-      networkmanager
+      enca # guess and change encodings ; enca -l ru -x UTF-8 <FILE>
+      ipfs # decentralized web
+      wgetpaste # send file to paste service
+      nix-index # search for derivation with specific folder
+      doas # sudo alternative
+      gnome3.gnome-sound-recorder # record my beautiful voice
 
       exa           # ls replacement in Rust
-      libxml2       # xmllint
       ffmpeg        # convert audio, etc.
       libav         # fork of ffmpeg
 
@@ -53,7 +59,6 @@
 
       texlive.combined.scheme-full
 
-      gitAndTools.gitflow # opinionated branch manager
 
       youtube-dl  # download video
       gallery-dl  # download photo
@@ -74,6 +79,7 @@
       wpa_supplicant_gui # wifi connecter
 
       tmsu          # file tagging
+      beets         # music tagging
 
       imagemagick  # reverse and edit image from terminal
 
@@ -81,7 +87,6 @@
       gron        # greppable JSON
       ripgrep-all # greppable pdfs, images, subtitles, all
 
-      mpdscribble
       gnupg
 
       # ranger previewers
@@ -91,13 +96,13 @@
       ffmpegthumbnailer # .mkv | .mp4 | ...
 
       parallel-full # execute jobs in parallel 
-      wine          # Windows layer emulator
-      winetricks
-      steam-run     # environment for games
       kid3        # audio tagger
+      wine
     ]; 
 
     unusedUtils = [
+      gitAndTools.gitflow # opinionated branch manager
+      libxml2       # xmllint
       calibre           # .epub
       jq          # neuron needs it
 
@@ -108,24 +113,27 @@
       unixtools.xxd
     ];
 
-    games = [
-      steam
+    social = [
+      tdesktop
+      signal-desktop
     ];
 
     apps = [
-      lynx          #  web browser
-      gimp          #  image manipulator!
+      artha
+      sent          # presentations
+      lynx          # web browser
+      gimp          # image manipulator!
       deluge        # Torrent client
       mpd           # music server
       ncmpcpp       # music player
       (zathura.override {
-        useMupdf = false;
+        # useMupdf = false;
       })
       sxiv        # Simple X Image Viewer
       anki        # cards
-
     ];
     unusedApps = [
+
       jq neuron      # bigger notes
 
       khal          #  calendar
@@ -143,5 +151,5 @@
       mpc_cli     
     ];
   in 
-    apps ++ games ++ utils ++ x-related;
+    apps ++ social ++ utils ++ x-related ++ graphics;
 }

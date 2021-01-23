@@ -1,0 +1,9 @@
+#!/usr/bin/env bash 
+
+cd ~/Pictures/screenshots
+
+shotgun --geometry $(xrect)
+
+
+
+

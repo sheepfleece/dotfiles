@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+alacritty --title ncmpcpp --command ncmpcpp

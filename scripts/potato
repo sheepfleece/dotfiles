@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+sleep $(expr 25 \* 60)
+rofi -e "Stop Right There, Criminal Scum"

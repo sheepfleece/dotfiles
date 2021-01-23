@@ -70,9 +70,12 @@ Config
   , Run Com "echo" 
     ["I'll wait for you for as long as it takes"] "" 0
 
+  , Run Com "ticker"
+    [""] "" 30 
+
   , Run Com "sh" 
     [ "-c"
-    , "sed '/^$/d' '/home/sheep/Notes/Bel.md' | sed '/^[?#*].*/d' | shuf -n 1 | sed 's/--.*$//'"
+    , "cat /home/sheep/Notes/1.Quotes/* | sed '/^$/d' | sed '/^[?#*].*/d' | shuf -n 1 | sed 's|--.*$||'"
     ] "shuf" 150
 
   , Run Com "sh" 
