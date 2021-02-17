@@ -1,9 +1,11 @@
 {-# LANGUAGE DeriveDataTypeable    #-}
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE InstanceSigs          #-}
+{-# LANGUAGE LambdaCase            #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TupleSections         #-}
+{-# LANGUAGE TypeOperators         #-}
 
 import           XMonad                       hiding (Screen)
 import           XMonad.Actions.Minimize
@@ -35,6 +37,7 @@ import           Control.Applicative          ((<|>))
 import           Control.Concurrent
 import           Control.Monad                (when)
 import           Data.Foldable
+import           Data.Function
 import           Data.Maybe
 import           Text.Read                    (readMaybe)
 
@@ -48,6 +51,7 @@ import           System.IO.Unsafe             (unsafePerformIO)
 
 import           Data.Coerce                  (coerce)
 import qualified Data.List                    as L
+import           GHC.List                     (lookup)
 
 data MyWorkspaces
   = Dev1  | Dev2
@@ -80,19 +84,21 @@ myAdditionalKeys =
   | (key, ws) <- myWorkspaces
   ] ++
 
-  [ ((myModMask, xK_c), sendMessage Killed >> withFocused killWindow)
+  [ ((myModMask, xK_c), killsWindow)
   , ((myModMask, xK_z), sendMessage MirrorShrink)
   , ((myModMask, xK_a), sendMessage MirrorExpand)
 
   , ((myModMask, xK_Return), spawn "alacritty")
 
-  , ((myModMask, xK_y), windows focusMaster)
-  , ((myModMask .|. shiftMask, xK_y), windows swapMaster)
 
   , ((myModMask, xK_space), toggleFull)
-  , ((myModMask, xK_i), setLayout (Layout (avoidStruts tiled)))
-  , ((myModMask, xK_u), setLayout (Layout (avoidStruts threeCols)))
+  , ((myModMask, xK_i), windows focusMaster)
+  , ((myModMask .|. shiftMask, xK_i), windows swapMaster)
+  , ((myModMask, xK_u), setLayout (Layout (avoidStruts tiled)))
+  , ((myModMask, xK_y), setLayout (Layout (avoidStruts threeCols)))
 
+  , ((myModMask, xK_comma ), sendMessage (IncMasterN ( 1)))
+  , ((myModMask, xK_period), sendMessage (IncMasterN (-1)))
   {-
     Hide xmobar. Doesn't work when there are no windows.
    -}
@@ -109,6 +115,8 @@ myAdditionalKeys =
   , ((myModMask .|. shiftMask, xK_p), spawn "rofi -m -4 -show window")
   ]
 
+killsWindow :: X ()
+killsWindow = withFocused $ \f -> sendMessage (Killed f) >> withFocused killWindow
 
 myManageHook :: ManageHook
 myManageHook = composeAll $
@@ -129,10 +137,9 @@ myManageHook = composeAll $
   , (className =? "kmix")           --> doFloat
   , (className =? "klipper")        --> doFloat
   , (className =? "Plasmoidviewer") --> doFloat
-  , (className =? ksmserver)        --> scatter notFilledWorkspace
-  , (className =? ksmserver)        --> doFloat
   , (className =? "kwalletd5")      --> doFloat
   ] ++
+
   [ "Steam" ] `sendTo` Games ++
   [ "TelegramDesktop", "discord" ] `sendTo` Chats ++
   [ "tixati", "Tixati", "deluge", "Deluge" ] `sendTo` Media
@@ -140,48 +147,20 @@ myManageHook = composeAll $
     sendTo :: [String] -> MyWorkspaces -> [ManageHook]
     sendTo names ws = map (\name -> className =? name --> doShift (show ws)) names
 
-ksmserver :: String
-ksmserver = "ksmserver"
-
-scatter :: X (Maybe String) -> ManageHook
-scatter action = do
-  mws <- liftX action
-  case mws of
-    Nothing -> doF id
-    Just ws -> doShift ws
-
-
-notFilledWorkspace :: X (Maybe String)
-notFilledWorkspace = do
-  dsp    <- asks display
-  winset <- gets windowset
-  let
-    loop :: [Screen String l Window sid sd] -> IO (Maybe String)
-    loop [] = pure Nothing
-    loop (screen:screens) = do
-      classNames <-
-        let
-          getClassName :: Window -> IO String
-          getClassName = fmap resClass . getClassHint dsp
-          getWindows   = integrate' . stack . workspace
-        in sequence $ getClassName <$> (getWindows screen)
-      if (any (== ksmserver) classNames)
-        then loop screens
-        else pure . Just . tag . workspace $ screen
-  liftIO $ loop $ screens winset
-
 
 {-
   Slightly configured `ResizableTall` layout with
-  boundaries on the number of master windows.
+  different handling of master windows.
  -}
 newtype MyTall a = MyTall
     { tall :: (ResizableTall a)
     }
     deriving (Show, Read)
 
+withResizable :: (ResizableTall a -> ResizableTall a) -> MyTall a -> MyTall a
+withResizable f (MyTall rt) = MyTall $ f rt
 
-data Killed = Killed
+data Killed = Killed Window
     deriving (Typeable)
 instance Message Killed
 
@@ -198,20 +177,84 @@ instance LayoutClass MyTall a where
   pureMessage (MyTall rt) msg = coerce $ pureMessage rt msg
 
   handleMessage :: MyTall a -> SomeMessage -> X (Maybe (MyTall a))
-  handleMessage (MyTall rt@(ResizableTall nmaster delta frac slaves)) msg
-    | Just (IncMasterN d) <- fromMessage msg = Just <$> incmastern d
-    | Just (Killed)       <- fromMessage msg = Just <$> kill
+  handleMessage mt@(MyTall rt) msg
+    | Just (IncMasterN d) <- fromMessage msg = Just <$> handleIncMaster mt d
+    | Just (Killed win)   <- fromMessage msg = Just <$> handleKilled mt win
     | otherwise                              = fmap MyTall <$> handleMessage rt msg
-    where
-      winNumA = withWindowSet (pure . L.length . integrate' . stack . workspace . current)
-      applyBoundaries n = max 1 . min n
 
-      kill =
-        winNumA >>= (\n -> pure $ MyTall (ResizableTall (applyBoundaries (n-1) nmaster) delta frac slaves))
-      incmastern d =
-        winNumA >>= (\n -> pure $ MyTall (ResizableTall (applyBoundaries n (d + nmaster)) delta frac slaves))
+handleIncMaster :: MyTall a -> Int -> X (MyTall a)
+handleIncMaster mt d = withWindowSet $ \winset -> pure $
+    withResizable
+      (\r -> r { _nmaster = applyBoundaries (length (getWindows winset)) (d + _nmaster r)})
+      mt
+
+handleKilled :: MyTall a -> Window -> X (MyTall a)
+handleKilled mt win = withWindowSet $ \winset -> pure $
+    let
+      -- Decrease by one if deleting master window.
+      -- When I have more than one master window and want to delete one of them
+      -- it is very rarely that I want to keep the same number of master windows
+      newMasterNum masterNum = max 1 $ masterNum - fromEnum (isMaster masterNum win (getWindows winset))
+    in
+      withResizable
+        (\r -> r { _nmaster = newMasterNum (_nmaster r) })
+        mt
+
+getWindows :: WindowSet -> [Window]
+getWindows = integrate' . stack . workspace . current
+
+applyBoundaries :: Int -> Int -> Int
+applyBoundaries n = max 1 . min n
+
+isMaster :: Int -> Window -> [Window] -> Bool
+isMaster nmaster w ws = fromMaybe False $ fmap (< nmaster) $ lookup' w ws
+
+lookup' :: Eq a => a -> [a] -> Maybe Int
+lookup' x xs = lookup x $ zip xs [0..]
 
 
+
+{-
+  Same changes for `ThreeCol` layout
+ -}
+newtype MyCols a = MyCols
+  { cols :: ThreeCol a
+  }
+  deriving (Show, Read)
+
+withThreeCols :: (ThreeCol a -> ThreeCol a) -> MyCols a -> MyCols a
+withThreeCols f (MyCols rt) = MyCols $ f rt
+
+instance LayoutClass MyCols a where
+  doLayout (MyCols rt) rect stack = (fmap . fmap . fmap) MyCols $ doLayout  rt rect stack
+  emptyLayout (MyCols rt) rect = (fmap . fmap . fmap) MyCols $ emptyLayout rt rect
+
+  pureMessage :: MyCols a -> SomeMessage -> Maybe (MyCols a)
+  pureMessage (MyCols rt) msg = coerce $ pureMessage rt msg
+
+  handleMessage :: MyCols a -> SomeMessage -> X (Maybe (MyCols a))
+  handleMessage mt@(MyCols rt) msg
+    | Just (IncMasterN d) <- fromMessage msg = Just <$> handleIncMaster' mt d
+    | Just (Killed win)   <- fromMessage msg = Just <$> handleKilled' mt win
+    | otherwise                              = fmap MyCols <$> handleMessage rt msg
+
+handleIncMaster' :: MyCols a -> Int -> X (MyCols a)
+handleIncMaster' mt d = withWindowSet $ \winset -> pure $
+    withThreeCols
+      (\r -> r { threeColNMaster = applyBoundaries (length (getWindows winset)) (d + threeColNMaster r)})
+      mt
+
+handleKilled' :: MyCols a -> Window -> X (MyCols a)
+handleKilled' mt win = withWindowSet $ \winset -> pure $
+    let
+      -- Decrease by one if deleting master window.
+      -- When I have more than one master window and want to delete one of them
+      -- it is very rarely that I want to keep the same number of master windows
+      newMasterNum masterNum = max 1 $ masterNum - fromEnum (isMaster masterNum win (getWindows winset))
+    in
+      withThreeCols
+        (\r -> r { threeColNMaster = newMasterNum (threeColNMaster r) })
+        mt
 
 type XScreen = Screen WorkspaceId (Layout Window) Window ScreenId ScreenDetail
 
@@ -253,8 +296,8 @@ myLogHook = withWindowSet $ \winSet ->
 
 {-
   Visually distinguish between different layout states with a single character.
-    '!' - Full layout with hidden windows.
-    '*' - Full layout.
+    '!' - Full layout with hidden windows underneath.
+    '*' - Full layout without any windows.
     '#' - Three columns layout.
  -}
 layoutSymbol :: WindowSpace -> Char
@@ -294,8 +337,8 @@ xmobarName n = go . L.take n
    That means that initial values are not used.
  -}
 savedLayouts :: IORef [Layout Window]
-{-# NOINLINE savedLayouts #-}
 savedLayouts = unsafePerformIO (newIORef $ const (Layout Full) <$> [ minBound .. maxBound :: MyWorkspaces ])
+{-# NOINLINE savedLayouts #-}
 
 toggleFull :: X ()
 toggleFull = withWindowSet $ \winSet ->
@@ -323,22 +366,27 @@ updateAt 0 f (x:xs) = f x : xs
 updateAt n f (x:xs) = x : updateAt (n - 1) f xs
 updateAt _ _ []     = []
 
+type (<?>) = Choose
+infixr 3 <?>
+
+type (!*) = ModifiedLayout
+infixr 4 !*
+
 type MyLayout =
-  (ModifiedLayout SmartBorder
-  (ModifiedLayout Spacing
-  (ModifiedLayout AvoidStruts (Choose MyTall (Choose Full ThreeCol)))))
+  SmartBorder !* Spacing !* AvoidStruts !* (MyTall <?> MyCols)
 
 myLayoutHook :: Eq a => Integer -> MyLayout a
 myLayoutHook n
   = smartBorders
   $ spacingRaw True (Border 0 n n n) True (Border n n n n) True
-  $ avoidStruts $ tiled ||| Full ||| threeCols
+  $ avoidStruts $ tiled ||| threeCols
 
 tiled :: MyTall a
 tiled = MyTall $ ResizableTall nmaster delta ratio []
 
-threeCols :: ThreeCol a
-threeCols = ThreeColMid nmaster delta ratio
+
+threeCols :: MyCols a
+threeCols = MyCols $ ThreeColMid nmaster delta ratio
 
 nmaster :: Int
 nmaster = 1
@@ -364,7 +412,7 @@ myConfig = kdeConfig
        `focusDown` is used for opening files in nvim and staying there.
        I use it very rarely to make it togglable (if it even can be made).
      -}
-    myManageHook <+> manageHook kdeConfig -- <+> doF focusDown
+    myManageHook <+> manageHook kdeConfig <+> insertPosition Below Newer
   , focusFollowsMouse  = False
   , terminal           = "alacritty"
   } `additionalKeys` myAdditionalKeys
