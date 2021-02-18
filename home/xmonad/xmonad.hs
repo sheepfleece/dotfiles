@@ -7,7 +7,7 @@
 {-# LANGUAGE TupleSections         #-}
 {-# LANGUAGE TypeOperators         #-}
 
-import           XMonad                       hiding (Screen)
+import           XMonad                       hiding (Screen, focus)
 import           XMonad.Actions.Minimize
 
 import           XMonad.Config.Kde
@@ -20,7 +20,10 @@ import           XMonad.Hooks.FadeInactive    (fadeIn, fadeInactiveLogHook,
 import           XMonad.Hooks.InsertPosition
 import           XMonad.Hooks.ManageDocks
 import           XMonad.Layout.Circle         (Circle (..))
-import           XMonad.Layout.LayoutModifier (ModifiedLayout)
+
+
+import           XMonad.Layout.LayoutModifier
+import           XMonad.Layout.Maximize
 import           XMonad.Layout.Minimize
 import           XMonad.Layout.NoBorders
 import           XMonad.Layout.ResizableTile
@@ -28,9 +31,10 @@ import           XMonad.Layout.Spacing
 import           XMonad.Layout.ThreeColumns
 import           XMonad.Util.EZConfig
 import           XMonad.Util.Run
+import           XMonad.Util.XUtils
 
 import           XMonad.Core
-import           XMonad.Operations
+import           XMonad.Operations            hiding (focus)
 import           XMonad.StackSet              hiding (workspaces)
 
 import           Control.Applicative          ((<|>))
@@ -84,21 +88,24 @@ myAdditionalKeys =
   | (key, ws) <- myWorkspaces
   ] ++
 
-  [ ((myModMask, xK_c), killsWindow)
+  [ ((myModMask, xK_c), killsWindow >> windows focusUp)
   , ((myModMask, xK_z), sendMessage MirrorShrink)
   , ((myModMask, xK_a), sendMessage MirrorExpand)
 
   , ((myModMask, xK_Return), spawn "alacritty")
 
 
-  , ((myModMask, xK_space), toggleFull)
+  , ((myModMask, xK_space), withFocused (sendMessage . maximizeRestore))
+
   , ((myModMask, xK_i), windows focusMaster)
   , ((myModMask .|. shiftMask, xK_i), windows swapMaster)
-  , ((myModMask, xK_u), setLayout (Layout (avoidStruts tiled)))
-  , ((myModMask, xK_y), setLayout (Layout (avoidStruts threeCols)))
 
+  , ((myModMask, xK_u     ), sendMessage NextLayout)
+  , ((myModMask, xK_y     ), sendMessage Toggle)
   , ((myModMask, xK_comma ), sendMessage (IncMasterN ( 1)))
   , ((myModMask, xK_period), sendMessage (IncMasterN (-1)))
+  , ((myModMask, xK_equal ), sendMessage (Magnify ( 0.1)))
+  , ((myModMask, xK_minus ), sendMessage (Magnify (-0.1)))
   {-
     Hide xmobar. Doesn't work when there are no windows.
    -}
@@ -213,9 +220,10 @@ lookup' :: Eq a => a -> [a] -> Maybe Int
 lookup' x xs = lookup x $ zip xs [0..]
 
 
-
 {-
   Same changes for `ThreeCol` layout
+  TODO: Instead of RPY we can write one LayoutModifier for both of them.
+  Maybe will do it later :3
  -}
 newtype MyCols a = MyCols
   { cols :: ThreeCol a
@@ -241,7 +249,7 @@ instance LayoutClass MyCols a where
 handleIncMaster' :: MyCols a -> Int -> X (MyCols a)
 handleIncMaster' mt d = withWindowSet $ \winset -> pure $
     withThreeCols
-      (\r -> r { threeColNMaster = applyBoundaries (length (getWindows winset)) (d + threeColNMaster r)})
+      (\r -> r { threeColNMaster = applyBoundaries (length (getWindows winset)) ((-d) + threeColNMaster r)})
       mt
 
 handleKilled' :: MyCols a -> Window -> X (MyCols a)
@@ -275,7 +283,7 @@ myLogHook = withWindowSet $ \winSet ->
     ws = workspace <$> ss
 
     showName :: WindowSpace -> String
-    showName w = xmobarLayout (layoutSymbol w) $ xmobarName 6 (tag w)
+    showName w = xmobarName 6 (tag w)
 
     showScreenId :: XScreen -> String
     showScreenId s
@@ -294,31 +302,6 @@ myLogHook = withWindowSet $ \winSet ->
         where
           each n w = n ++ ":" ++ w
 
-{-
-  Visually distinguish between different layout states with a single character.
-    '!' - Full layout with hidden windows underneath.
-    '*' - Full layout without any windows.
-    '#' - Three columns layout.
- -}
-layoutSymbol :: WindowSpace -> Char
-layoutSymbol ws
-  | description l == description Full = if winNum `elem` [0, 1] then '*' else '!'
-  | description l == description threeCols = '#'
-  | otherwise = ' '
-  where
-    l = layout ws
-    winNum = length . integrate' . stack $ ws
-
-xmobarLayout :: Char -> String -> String
-xmobarLayout symbol name =
-  let
-    (padl, name') = L.span (== ' ') name
-    (name'', padr) = L.span (/= ' ') name'
-  in
-    padl ++ name'' ++ case padr of
-                    (_:padr') -> symbol : padr'
-                    []        -> ""
-
 xmobarName :: Int -> String -> String
 xmobarName n = go . L.take n
   where
@@ -331,36 +314,6 @@ xmobarName n = go . L.take n
       in
         padding side ++ str ++ padding (side + offset)
 
-{-
-   Saved layouts for toggling `Full` layout on each workspace.
-   The layout is first saved when `toggleFull` is used.
-   That means that initial values are not used.
- -}
-savedLayouts :: IORef [Layout Window]
-savedLayouts = unsafePerformIO (newIORef $ const (Layout Full) <$> [ minBound .. maxBound :: MyWorkspaces ])
-{-# NOINLINE savedLayouts #-}
-
-toggleFull :: X ()
-toggleFull = withWindowSet $ \winSet ->
-  let
-    curlay :: Layout Window
-    curlay = layout . workspace . current $ winSet
-
-    mcurwsp :: Maybe MyWorkspaces
-    mcurwsp = readMaybe . tag . workspace . current $ winSet
-  in
-    case mcurwsp of
-      Nothing -> pure ()
-      Just curwsp ->
-        if description curlay /= description Full
-        then do
-          liftIO (modifyIORef' savedLayouts (updateAt (fromEnum curwsp) (const curlay)))
-          setLayout (Layout $ avoidStruts Full)
-          sendMessage ToggleStruts
-        else do
-          ls <- liftIO (readIORef savedLayouts)
-          setLayout (ls !! (fromEnum curwsp))
-
 updateAt :: Int -> (a -> a) -> [a] -> [a]
 updateAt 0 f (x:xs) = f x : xs
 updateAt n f (x:xs) = x : updateAt (n - 1) f xs
@@ -372,21 +325,23 @@ infixr 3 <?>
 type (!*) = ModifiedLayout
 infixr 4 !*
 
-type MyLayout =
-  SmartBorder !* Spacing !* AvoidStruts !* (MyTall <?> MyCols)
+myLayout :: (AvoidStruts !* ((Maximize !* Magnifier !* MyTall) <?> (Maximize !* Magnifier !* MyCols))) Window
+myLayout
+  = avoidStruts
+  $ tiled ||| threeCols
 
-myLayoutHook :: Eq a => Integer -> MyLayout a
-myLayoutHook n
-  = smartBorders
-  $ spacingRaw True (Border 0 n n n) True (Border n n n n) True
-  $ avoidStruts $ tiled ||| threeCols
-
-tiled :: MyTall a
-tiled = MyTall $ ResizableTall nmaster delta ratio []
+tiled :: (Maximize !* Magnifier !* MyTall) Window
+tiled
+  = maximizeWithPadding 0
+  $ ModifiedLayout (Mag nmaster (Ratio 1.2 1.2) Off All)
+  $ MyTall $ ResizableTall nmaster delta ratio []
 
 
-threeCols :: MyCols a
-threeCols = MyCols $ ThreeColMid nmaster delta ratio
+threeCols :: (Maximize !* Magnifier !* MyCols) Window
+threeCols
+  = maximizeWithPadding 0
+  $ ModifiedLayout (Mag nmaster (Ratio 1.3 1.3) On NoMaster)
+  $ MyCols $ ThreeColMid nmaster delta ratio
 
 nmaster :: Int
 nmaster = 1
@@ -398,20 +353,16 @@ ratio   = 1/2
 myModMask :: KeyMask
 myModMask = mod4Mask
 
-myConfig :: XConfig MyLayout
+-- myConfig :: XConfig DefaultLayout
 myConfig = kdeConfig
   { modMask            = myModMask
   , borderWidth        = 3
   , focusedBorderColor = "#e2a478"
   , normalBorderColor  = "#1c1c1c"
   , workspaces         = fmap snd myWorkspaces
-  , layoutHook         = myLayoutHook 0
+  , layoutHook         = myLayout
   , logHook            = myLogHook
   , manageHook         =
-    {-
-       `focusDown` is used for opening files in nvim and staying there.
-       I use it very rarely to make it togglable (if it even can be made).
-     -}
     myManageHook <+> manageHook kdeConfig <+> insertPosition Below Newer
   , focusFollowsMouse  = False
   , terminal           = "alacritty"
@@ -435,4 +386,150 @@ main = do
     Start XMonad.
    -}
   xmonad . ewmh . docks $ myConfig
+
+
+
+---------------------------------------
+{-# DEPRECATED magnifier "Use magnify instead." #-}
+magnifier :: l a -> ModifiedLayout Magnifier l a
+magnifier = ModifiedLayout (Mag 1 (Ratio 1.5 1.5) On All)
+
+-- | Change the size of the window that has focus by a custom zoom
+{-# DEPRECATED magnifiercz "Use magnify instead." #-}
+magnifiercz :: Rational -> l a -> ModifiedLayout Magnifier l a
+magnifiercz cz = ModifiedLayout (Mag 1 (Ratio (fromRational cz) (fromRational cz)) On All)
+
+-- | Increase the size of the window that has focus, unless if it is one of the
+-- master windows.
+{-# DEPRECATED magnifier' "Use magnify instead." #-}
+magnifier' :: l a -> ModifiedLayout Magnifier l a
+magnifier' = ModifiedLayout (Mag 1 (Ratio 1.5 1.5) On NoMaster)
+
+-- | Magnifier that defaults to Off
+{-# DEPRECATED magnifierOff "Use magnify instead." #-}
+magnifierOff :: l a -> ModifiedLayout Magnifier l a
+magnifierOff = ModifiedLayout (Mag 1 (Ratio 1.5 1.5) Off All)
+
+-- | A magnifier that greatly magnifies with defaults to Off
+{-# DEPRECATED maxMagnifierOff "Use magnify with FullScreen instead." #-}
+maxMagnifierOff :: l a -> ModifiedLayout Magnifier l a
+maxMagnifierOff = ModifiedLayout (Mag 1 FullScreen Off All)
+
+-- | Increase the size of the window that has focus by a custom zoom,
+-- unless if it is one of the the master windows.
+{-# DEPRECATED magnifiercz' "Use magnify instead." #-}
+magnifiercz' :: Rational -> l a -> ModifiedLayout Magnifier l a
+magnifiercz' cz = ModifiedLayout (Mag 1 (Ratio (fromRational cz) (fromRational cz)) On NoMaster)
+
+-- | A magnifier that greatly magnifies just the vertical direction
+{-# DEPRECATED maximizeVertical "Use magnify with Horizontal instead." #-}
+maximizeVertical :: l a -> ModifiedLayout Magnifier l a
+maximizeVertical = ModifiedLayout (Mag 1 Horizontal Off All)
+
+
+data Zoom = Ratio !Double !Double | Horizontal | Vertical | FullScreen
+  deriving (Read, Show)
+
+data MagnifyMsg
+  = Magnify !Double
+  | ToggleOn | ToggleOff | Toggle
+  | SetZoom Zoom
+  deriving (Typeable)
+instance Message MagnifyMsg
+
+data Magnifier a = Mag
+  { mg_nmaster :: !Int
+  , mg_zoom    :: Zoom
+  , mg_toggle  :: Toggle
+  , mg_master  :: MagnifyMaster
+  } deriving (Read, Show)
+
+magnify :: Int -> Zoom -> Toggle -> MagnifyMaster -> l a -> ModifiedLayout Magnifier l a
+magnify n z t m = ModifiedLayout $ Mag n z t m
+
+data Toggle = On | Off
+  deriving (Read, Show)
+
+data MagnifyMaster = All | NoMaster
+  deriving (Read, Show)
+
+instance LayoutModifier Magnifier Window where
+    redoLayout  (Mag _ z On All     ) r (Just s) wrs = applyMagnifier z r s wrs
+    redoLayout  (Mag n z On NoMaster) r (Just s) wrs = unlessMaster n (applyMagnifier z) r s wrs
+    redoLayout  _                     _ _        wrs = pure (wrs, Nothing)
+
+    handleMess mag m
+      | Just (IncMasterN d) <- fromMessage m = fmap Just $ withWindowSet $ \winset -> pure $
+        mag { mg_nmaster = applyBoundaries (length (getWindows winset)) (mg_nmaster mag - d) }
+
+      | Just (Killed w)     <- fromMessage m = fmap Just $ withWindowSet $ \winset -> pure $
+        let
+          newMasterNum masterNum =
+            max 1 $ masterNum - fromEnum (isMaster masterNum w (getWindows winset))
+        in mag { mg_nmaster = newMasterNum (mg_nmaster mag) }
+      | otherwise = pure $ pureMess mag m
+
+    pureMess = handlePureMess
+
+    modifierDescription mag =
+      case (mg_toggle mag, mg_master mag) of
+        (On, All)      -> "Magnifier"
+        (On, NoMaster) -> "Magnifier NoMaster"
+        (Off, _)       -> "Magnifier (off)"
+
+handlePureMess :: Magnifier a -> SomeMessage -> Maybe (Magnifier a)
+handlePureMess mag@(Mag _ (Ratio dx dy) On  _) m
+  | Just (Magnify d)    <- fromMessage m = Just mag { mg_zoom = Ratio (d + dx) (d + dy) }
+
+handlePureMess mag@(Mag _ _ On _) m
+  | Just ToggleOff      <- fromMessage m = Just mag { mg_toggle = Off }
+  | Just Toggle         <- fromMessage m = Just mag { mg_toggle = Off }
+  | Just (SetZoom z)    <- fromMessage m = Just mag { mg_zoom = z }
+
+handlePureMess mag@(Mag _ _ Off _) m
+  | Just ToggleOn       <- fromMessage m = Just mag { mg_toggle = On }
+  | Just Toggle         <- fromMessage m = Just mag { mg_toggle = On }
+
+handlePureMess _ _ = Nothing
+
+type NewLayout a = Rectangle -> Stack a -> [(Window, Rectangle)] -> X ([(Window, Rectangle)], Maybe (Magnifier a))
+
+unlessMaster :: Int -> NewLayout a -> NewLayout a
+unlessMaster n mainmod r s wrs
+  | null (drop (n-1) (up s)) = pure (wrs, Nothing)
+  | otherwise                = mainmod r s wrs
+
+applyMagnifier :: Zoom -> Rectangle -> t -> [(Window, Rectangle)]
+               -> X ([(Window, Rectangle)], Maybe a)
+applyMagnifier z r _ wrs = do
+  focused <- withWindowSet (pure . peek)
+  let mag (w, wr) ws
+        | focused == Just w = ws ++ [(w, magnifyInto z wr r)]
+        | otherwise         = (w,wr) : ws
+
+  pure (reverse $ foldr mag [] wrs, Nothing)
+
+magnifyInto :: Zoom -> Rectangle -> Rectangle -> Rectangle
+magnifyInto zoom rect@(Rectangle x y w h) screenRect@(Rectangle sx sy sw sh) =
+  case zoom of
+    FullScreen  -> screenRect
+    Vertical    -> Rectangle sx y sw h
+    Horizontal  -> Rectangle x sy w sh
+    Ratio dx dy -> fit screenRect $ magnifyRect dx dy rect
+
+magnifyRect :: Double -> Double -> Rectangle -> Rectangle
+magnifyRect zoomx zoomy (Rectangle x y w h) = Rectangle x' y' w' h'
+  where
+    x' = x - (fromIntegral (w' - w) `div` 2)
+    y' = y - (fromIntegral (h' - h) `div` 2)
+    w' = round $ fromIntegral w * zoomx
+    h' = round $ fromIntegral h * zoomy
+
+fit :: Rectangle -> Rectangle -> Rectangle
+fit (Rectangle sx sy sw sh) (Rectangle x y w h) = Rectangle x' y' w' h'
+  where
+    x' = max sx (x - max 0 (x + fi w - sx - fi sw))
+    y' = max sy (y - max 0 (y + fi h - sy - fi sh))
+    w' = min sw w
+    h' = min sh h
 
