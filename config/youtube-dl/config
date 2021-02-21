@@ -13,4 +13,7 @@
 --yes-playlist
 --cookies ~/.config/youtube-dl/cookies.txt
 
+# Low Quality, mp4, 640x360
+--format 18
+
 --output ~/Videos/%(playlist_title)s/%(title)s.%(ext)s
