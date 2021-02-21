@@ -108,6 +108,7 @@ nnoremap sf :Files<CR>
 nnoremap sb :Buffers<CR>
 nnoremap sc :Colors<CR>
 nnoremap sh :History:<CR>
+nnoremap sw yaw:Rg <C-R>"<CR>
 
 
 " re-undo
