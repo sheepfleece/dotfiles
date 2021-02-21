@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+set -e
+
+command_exists () {
+    type "$1" &> /dev/null ;
+}
+
+if ! command_exists cabal; then
+  exit 1;
+fi
+
+while true
+do
+  if cabal build --dry-run &>/dev/null; then
+    return;
+  fi
+  cd ..
+done

@@ -1,3 +1,5 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
-alacritty --title ranger --command ranger 
+name="ranger"
+
+alacritty --class "${name}","${name}" --title "${name}" --command "${name}"
