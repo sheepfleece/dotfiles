@@ -26,6 +26,12 @@
         else { text = builtins.readFile name;   };
     in mapAttrs' each files;
 
+  xresources.properties = {
+    "*background" = "#282828";
+    "*foreground" = "#e2a478";
+    "*font"       = "Hasklig";
+  };
+
   services.lorri.enable = true;
   services.mpd.enable = true;
   services.mpd.musicDirectory = "/home/sheep/Music";
