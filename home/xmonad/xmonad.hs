@@ -15,22 +15,19 @@ import           XMonad.Config.Prime          (getClassHint, resClass)
 import           XMonad.Hooks.DynamicLog      (dynamicLogWithPP, ppOutput,
                                                xmobar, xmonadPropLog)
 import           XMonad.Hooks.EwmhDesktops
-import           XMonad.Hooks.FadeInactive    (fadeIn, fadeInactiveLogHook,
-                                               fadeOutLogHook)
 import           XMonad.Hooks.InsertPosition
 import           XMonad.Hooks.ManageDocks
-import           XMonad.Layout.Circle         (Circle (..))
-
-
+import           XMonad.Hooks.ManageHelpers
+import           XMonad.Hooks.RefocusLast     (refocusLastLogHook,
+                                               refocusLastWhen)
 import           XMonad.Layout.LayoutModifier
-import           XMonad.Layout.Maximize
-import           XMonad.Layout.Minimize
 import           XMonad.Layout.NoBorders
 import           XMonad.Layout.ResizableTile
 import           XMonad.Layout.Spacing
 import           XMonad.Layout.ThreeColumns
 import           XMonad.Util.EZConfig
 import           XMonad.Util.Run
+import           XMonad.Util.Types            (These (..))
 import           XMonad.Util.XUtils
 
 import           XMonad.Core
@@ -43,15 +40,12 @@ import           Control.Monad                (when)
 import           Data.Foldable
 import           Data.Function
 import           Data.Maybe
+import           Data.Monoid                  (All)
 import           Text.Read                    (readMaybe)
 
 import           Graphics.X11.Xinerama
 
 import           Data.Ratio
-import           XMonad.Hooks.ManageHelpers
-
-import           Data.IORef
-import           System.IO.Unsafe             (unsafePerformIO)
 
 import           Data.Coerce                  (coerce)
 import qualified Data.List                    as L
@@ -71,12 +65,8 @@ myWorkspaces = (fmap show) <$>
   [ (xK_n, Dev1), (xK_m, Dev2)
   , (xK_bracketleft, Media), (xK_bracketright, Chats)
   , (xK_backslash, Games)
-    {-
-       Oftentimes I read with only one hand,
-       and it is benifitial to have two ways to switch to those Workspaces.
-     -}
+
   , (xK_semicolon, Books), (xK_quoteright, Notes)
-  , (xK_v, Books), (xK_b, Notes)
   ]
 
 myAdditionalKeys :: [((KeyMask, KeySym), X ())]
@@ -88,20 +78,20 @@ myAdditionalKeys =
   | (key, ws) <- myWorkspaces
   ] ++
 
-  [ ((myModMask, xK_c), killsWindow >> windows focusUp)
+  [ ((myModMask, xK_c), killsWindow)
   , ((myModMask, xK_z), sendMessage MirrorShrink)
   , ((myModMask, xK_a), sendMessage MirrorExpand)
 
   , ((myModMask, xK_Return), spawn "alacritty")
 
 
-  , ((myModMask, xK_space), withFocused (sendMessage . maximizeRestore))
+  , ((myModMask, xK_space), sendMessage (ToggleMsg 0))
 
   , ((myModMask, xK_i), windows focusMaster)
   , ((myModMask .|. shiftMask, xK_i), windows swapMaster)
 
   , ((myModMask, xK_u     ), sendMessage NextLayout)
-  , ((myModMask, xK_y     ), sendMessage Toggle)
+  , ((myModMask, xK_y     ), sendMessage (ToggleMsg 1))
   , ((myModMask, xK_comma ), sendMessage (IncMasterN ( 1)))
   , ((myModMask, xK_period), sendMessage (IncMasterN (-1)))
   , ((myModMask, xK_equal ), sendMessage (Magnify ( 0.1)))
@@ -155,119 +145,11 @@ myManageHook = composeAll $
     sendTo names ws = map (\name -> className =? name --> doShift (show ws)) names
 
 
-{-
-  Slightly configured `ResizableTall` layout with
-  different handling of master windows.
- -}
-newtype MyTall a = MyTall
-    { tall :: (ResizableTall a)
-    }
-    deriving (Show, Read)
-
-withResizable :: (ResizableTall a -> ResizableTall a) -> MyTall a -> MyTall a
-withResizable f (MyTall rt) = MyTall $ f rt
-
-data Killed = Killed Window
-    deriving (Typeable)
-instance Message Killed
-
-{-
-  Boundaries:
-  1. There is always at least one master window
-  2. There can't be more master windows then windows on this workspace
- -}
-instance LayoutClass MyTall a where
-  doLayout (MyTall rt) rect stack = (fmap . fmap . fmap) MyTall $ doLayout  rt rect stack
-  emptyLayout (MyTall rt) rect = (fmap . fmap . fmap) MyTall $ emptyLayout rt rect
-
-  pureMessage :: MyTall a -> SomeMessage -> Maybe (MyTall a)
-  pureMessage (MyTall rt) msg = coerce $ pureMessage rt msg
-
-  handleMessage :: MyTall a -> SomeMessage -> X (Maybe (MyTall a))
-  handleMessage mt@(MyTall rt) msg
-    | Just (IncMasterN d) <- fromMessage msg = Just <$> handleIncMaster mt d
-    | Just (Killed win)   <- fromMessage msg = Just <$> handleKilled mt win
-    | otherwise                              = fmap MyTall <$> handleMessage rt msg
-
-handleIncMaster :: MyTall a -> Int -> X (MyTall a)
-handleIncMaster mt d = withWindowSet $ \winset -> pure $
-    withResizable
-      (\r -> r { _nmaster = applyBoundaries (length (getWindows winset)) (d + _nmaster r)})
-      mt
-
-handleKilled :: MyTall a -> Window -> X (MyTall a)
-handleKilled mt win = withWindowSet $ \winset -> pure $
-    let
-      -- Decrease by one if deleting master window.
-      -- When I have more than one master window and want to delete one of them
-      -- it is very rarely that I want to keep the same number of master windows
-      newMasterNum masterNum = max 1 $ masterNum - fromEnum (isMaster masterNum win (getWindows winset))
-    in
-      withResizable
-        (\r -> r { _nmaster = newMasterNum (_nmaster r) })
-        mt
-
-getWindows :: WindowSet -> [Window]
-getWindows = integrate' . stack . workspace . current
-
-applyBoundaries :: Int -> Int -> Int
-applyBoundaries n = max 1 . min n
-
-isMaster :: Int -> Window -> [Window] -> Bool
-isMaster nmaster w ws = fromMaybe False $ fmap (< nmaster) $ lookup' w ws
-
-lookup' :: Eq a => a -> [a] -> Maybe Int
-lookup' x xs = lookup x $ zip xs [0..]
-
-
-{-
-  Same changes for `ThreeCol` layout
-  TODO: Instead of RPY we can write one LayoutModifier for both of them.
-  Maybe will do it later :3
- -}
-newtype MyCols a = MyCols
-  { cols :: ThreeCol a
-  }
-  deriving (Show, Read)
-
-withThreeCols :: (ThreeCol a -> ThreeCol a) -> MyCols a -> MyCols a
-withThreeCols f (MyCols rt) = MyCols $ f rt
-
-instance LayoutClass MyCols a where
-  doLayout (MyCols rt) rect stack = (fmap . fmap . fmap) MyCols $ doLayout  rt rect stack
-  emptyLayout (MyCols rt) rect = (fmap . fmap . fmap) MyCols $ emptyLayout rt rect
-
-  pureMessage :: MyCols a -> SomeMessage -> Maybe (MyCols a)
-  pureMessage (MyCols rt) msg = coerce $ pureMessage rt msg
-
-  handleMessage :: MyCols a -> SomeMessage -> X (Maybe (MyCols a))
-  handleMessage mt@(MyCols rt) msg
-    | Just (IncMasterN d) <- fromMessage msg = Just <$> handleIncMaster' mt d
-    | Just (Killed win)   <- fromMessage msg = Just <$> handleKilled' mt win
-    | otherwise                              = fmap MyCols <$> handleMessage rt msg
-
-handleIncMaster' :: MyCols a -> Int -> X (MyCols a)
-handleIncMaster' mt d = withWindowSet $ \winset -> pure $
-    withThreeCols
-      (\r -> r { threeColNMaster = applyBoundaries (length (getWindows winset)) ((-d) + threeColNMaster r)})
-      mt
-
-handleKilled' :: MyCols a -> Window -> X (MyCols a)
-handleKilled' mt win = withWindowSet $ \winset -> pure $
-    let
-      -- Decrease by one if deleting master window.
-      -- When I have more than one master window and want to delete one of them
-      -- it is very rarely that I want to keep the same number of master windows
-      newMasterNum masterNum = max 1 $ masterNum - fromEnum (isMaster masterNum win (getWindows winset))
-    in
-      withThreeCols
-        (\r -> r { threeColNMaster = newMasterNum (threeColNMaster r) })
-        mt
 
 type XScreen = Screen WorkspaceId (Layout Window) Window ScreenId ScreenDetail
 
  {-
-   Show the name and used layout of the current workspace.
+   Show the name of the current workspace.
    1. Names should not be longer than 5 characters for aesthetic reasons.
   -}
 myLogHook :: X ()
@@ -325,26 +207,32 @@ infixr 3 <?>
 type (!*) = ModifiedLayout
 infixr 4 !*
 
-myLayout :: (AvoidStruts !* ((Maximize !* Magnifier !* MyTall) <?> (Maximize !* Magnifier !* MyCols))) Window
+type MyLayout = (AvoidStruts !* (MyTiled <?> MyThreeCols)) Window
+
+myLayout :: MyLayout
 myLayout
   = avoidStruts
   $ tiled ||| threeCols
 
-tiled :: (Maximize !* Magnifier !* MyTall) Window
+type MyTiled = (SmartMaster !* Magnifier !* Magnifier !* ResizableTall)
+tiled :: MyTiled Window
 tiled
-  = maximizeWithPadding 0
-  $ ModifiedLayout (Mag nmaster (Ratio 1.2 1.2) Off All)
-  $ MyTall $ ResizableTall nmaster delta ratio []
+  = smartMaster nmasters
+  $ magnify nmasters FullScreen Off All
+  $ magnify nmasters (Ratio 1.2 1.2) Off All
+  $ ResizableTall nmasters delta ratio []
 
-
-threeCols :: (Maximize !* Magnifier !* MyCols) Window
+type MyThreeCols = (InverseMaster !* SmartMaster !* Magnifier !* Magnifier !* ThreeCol)
+threeCols :: MyThreeCols Window
 threeCols
-  = maximizeWithPadding 0
-  $ ModifiedLayout (Mag nmaster (Ratio 1.3 1.3) On NoMaster)
-  $ MyCols $ ThreeColMid nmaster delta ratio
+  = inverseMaster
+  $ smartMaster nmasters
+  $ magnify nmasters FullScreen Off All
+  $ magnify nmasters (Ratio 1.3 1.3) On NoMaster
+  $ ThreeColMid nmasters delta ratio
 
-nmaster :: Int
-nmaster = 1
+nmasters :: Int
+nmasters = 1
 
 delta, ratio :: Ratio Integer
 delta   = 12/100
@@ -353,17 +241,21 @@ ratio   = 1/2
 myModMask :: KeyMask
 myModMask = mod4Mask
 
+myHandleEventHook :: Event -> X All
+myHandleEventHook = refocusLastWhen (liftX . pure $ True)
+
 -- myConfig :: XConfig DefaultLayout
-myConfig = kdeConfig
+myConfig = kde4Config
   { modMask            = myModMask
   , borderWidth        = 3
   , focusedBorderColor = "#e2a478"
   , normalBorderColor  = "#1c1c1c"
   , workspaces         = fmap snd myWorkspaces
   , layoutHook         = myLayout
-  , logHook            = myLogHook
+  , logHook            = refocusLastLogHook <+> myLogHook
   , manageHook         =
-    myManageHook <+> manageHook kdeConfig <+> insertPosition Below Newer
+    myManageHook <+> manageHook kde4Config <+> insertPosition Below Newer
+  , handleEventHook    = myHandleEventHook
   , focusFollowsMouse  = False
   , terminal           = "alacritty"
   } `additionalKeys` myAdditionalKeys
@@ -392,47 +284,51 @@ main = do
 ---------------------------------------
 {-# DEPRECATED magnifier "Use magnify instead." #-}
 magnifier :: l a -> ModifiedLayout Magnifier l a
-magnifier = ModifiedLayout (Mag 1 (Ratio 1.5 1.5) On All)
+magnifier = magnify 1 (Ratio 1.5 1.5) On All
 
 -- | Change the size of the window that has focus by a custom zoom
 {-# DEPRECATED magnifiercz "Use magnify instead." #-}
 magnifiercz :: Rational -> l a -> ModifiedLayout Magnifier l a
-magnifiercz cz = ModifiedLayout (Mag 1 (Ratio (fromRational cz) (fromRational cz)) On All)
+magnifiercz cz = magnify 1 (Ratio (fromRational cz) (fromRational cz)) On All
 
 -- | Increase the size of the window that has focus, unless if it is one of the
 -- master windows.
 {-# DEPRECATED magnifier' "Use magnify instead." #-}
 magnifier' :: l a -> ModifiedLayout Magnifier l a
-magnifier' = ModifiedLayout (Mag 1 (Ratio 1.5 1.5) On NoMaster)
+magnifier' = magnify 1 (Ratio 1.5 1.5) On NoMaster
 
 -- | Magnifier that defaults to Off
 {-# DEPRECATED magnifierOff "Use magnify instead." #-}
 magnifierOff :: l a -> ModifiedLayout Magnifier l a
-magnifierOff = ModifiedLayout (Mag 1 (Ratio 1.5 1.5) Off All)
+magnifierOff = magnify 1 (Ratio 1.5 1.5) Off All
 
 -- | A magnifier that greatly magnifies with defaults to Off
 {-# DEPRECATED maxMagnifierOff "Use magnify with FullScreen instead." #-}
 maxMagnifierOff :: l a -> ModifiedLayout Magnifier l a
-maxMagnifierOff = ModifiedLayout (Mag 1 FullScreen Off All)
+maxMagnifierOff = magnify 1 FullScreen Off All
 
 -- | Increase the size of the window that has focus by a custom zoom,
 -- unless if it is one of the the master windows.
 {-# DEPRECATED magnifiercz' "Use magnify instead." #-}
 magnifiercz' :: Rational -> l a -> ModifiedLayout Magnifier l a
-magnifiercz' cz = ModifiedLayout (Mag 1 (Ratio (fromRational cz) (fromRational cz)) On NoMaster)
+magnifiercz' cz = magnify 1 (Ratio (fromRational cz) (fromRational cz)) On NoMaster
 
 -- | A magnifier that greatly magnifies just the vertical direction
 {-# DEPRECATED maximizeVertical "Use magnify with Horizontal instead." #-}
 maximizeVertical :: l a -> ModifiedLayout Magnifier l a
-maximizeVertical = ModifiedLayout (Mag 1 Horizontal Off All)
+maximizeVertical = magnify 1 Horizontal Off All
 
 
 data Zoom = Ratio !Double !Double | Horizontal | Vertical | FullScreen
   deriving (Read, Show)
 
+newtype ToggleMsg = ToggleMsg { depth :: Int }
+  deriving (Typeable)
+instance Message ToggleMsg
+
 data MagnifyMsg
   = Magnify !Double
-  | ToggleOn | ToggleOff | Toggle
+  | ToggleOn | ToggleOff
   | SetZoom Zoom
   deriving (Typeable)
 instance Message MagnifyMsg
@@ -450,26 +346,29 @@ magnify n z t m = ModifiedLayout $ Mag n z t m
 data Toggle = On | Off
   deriving (Read, Show)
 
+toggle :: Toggle -> Toggle
+toggle On  = Off
+toggle Off = On
+
 data MagnifyMaster = All | NoMaster
   deriving (Read, Show)
 
 instance LayoutModifier Magnifier Window where
-    redoLayout  (Mag _ z On All     ) r (Just s) wrs = applyMagnifier z r s wrs
-    redoLayout  (Mag n z On NoMaster) r (Just s) wrs = unlessMaster n (applyMagnifier z) r s wrs
-    redoLayout  _                     _ _        wrs = pure (wrs, Nothing)
+    redoLayout mag r (Just s) wrs =
+      case (mg_toggle mag, mg_master mag) of
+        (On, All) -> applyMagnifier (mg_zoom mag) r s wrs
+        (On, NoMaster) -> unlessMaster (mg_nmaster mag) (applyMagnifier (mg_zoom mag)) r s wrs
+        (Off, _) -> pure (wrs, Nothing)
 
-    handleMess mag m
-      | Just (IncMasterN d) <- fromMessage m = fmap Just $ withWindowSet $ \winset -> pure $
-        mag { mg_nmaster = applyBoundaries (length (getWindows winset)) (mg_nmaster mag - d) }
-
-      | Just (Killed w)     <- fromMessage m = fmap Just $ withWindowSet $ \winset -> pure $
-        let
-          newMasterNum masterNum =
-            max 1 $ masterNum - fromEnum (isMaster masterNum w (getWindows winset))
-        in mag { mg_nmaster = newMasterNum (mg_nmaster mag) }
-      | otherwise = pure $ pureMess mag m
+    redoLayout _ _ _ wrs = pure (wrs, Nothing)
 
     pureMess = handlePureMess
+
+
+    handleMessOrInterceptIt mag msg
+      | Just (ToggleMsg 0) <- fromMessage msg = pure . Just $ This mag { mg_toggle = toggle $ mg_toggle mag }
+      | Just (ToggleMsg n) <- fromMessage msg = pure . Just . That $ SomeMessage (ToggleMsg (n - 1))
+      | otherwise = pure $ (\v -> These v msg) <$> pureMess mag msg
 
     modifierDescription mag =
       case (mg_toggle mag, mg_master mag) of
@@ -478,17 +377,17 @@ instance LayoutModifier Magnifier Window where
         (Off, _)       -> "Magnifier (off)"
 
 handlePureMess :: Magnifier a -> SomeMessage -> Maybe (Magnifier a)
-handlePureMess mag@(Mag _ (Ratio dx dy) On  _) m
-  | Just (Magnify d)    <- fromMessage m = Just mag { mg_zoom = Ratio (d + dx) (d + dy) }
+handlePureMess mag@(Mag _ (Ratio dx dy) On _) m
+  | Just (Magnify d) <- fromMessage m = Just mag { mg_zoom = Ratio (d + dx) (d + dy) }
+  | Just (IncMasterN d) <- fromMessage m = Just mag { mg_nmaster = max 0 (mg_nmaster mag + d) }
 
 handlePureMess mag@(Mag _ _ On _) m
-  | Just ToggleOff      <- fromMessage m = Just mag { mg_toggle = Off }
-  | Just Toggle         <- fromMessage m = Just mag { mg_toggle = Off }
-  | Just (SetZoom z)    <- fromMessage m = Just mag { mg_zoom = z }
+  | Just ToggleOff   <- fromMessage m = Just mag { mg_toggle = Off }
+  | Just (SetZoom z) <- fromMessage m = Just mag { mg_zoom = z }
 
 handlePureMess mag@(Mag _ _ Off _) m
-  | Just ToggleOn       <- fromMessage m = Just mag { mg_toggle = On }
-  | Just Toggle         <- fromMessage m = Just mag { mg_toggle = On }
+  | Just ToggleOn    <- fromMessage m = Just mag { mg_toggle = On }
+
 
 handlePureMess _ _ = Nothing
 
@@ -533,3 +432,67 @@ fit (Rectangle sx sy sw sh) (Rectangle x y w h) = Rectangle x' y' w' h'
     w' = min sw w
     h' = min sh h
 
+smartMaster :: Int -> l a -> ModifiedLayout SmartMaster l a
+smartMaster n l = ModifiedLayout (SmartMaster n) l
+
+newtype SmartMaster a = SmartMaster { unSmartMaster :: Int }
+  deriving (Show, Read)
+
+instance LayoutModifier SmartMaster Window where
+  handleMessOrInterceptIt (SmartMaster nmaster) msg
+    | Just (IncMasterN d) <- fromMessage msg = do
+        nmaster' <- incMaster nmaster d
+        pure $ Just $ These (SmartMaster nmaster') (SomeMessage (IncMasterN (nmaster' - nmaster)))
+    | Just (Killed win) <- fromMessage msg = do
+        mm <- killedMaster nmaster win
+        pure $ case mm of
+                  Nothing -> Nothing
+                  Just nmaster'  -> Just $ These (SmartMaster nmaster') (SomeMessage (IncMasterN (nmaster' - nmaster)))
+
+
+    | otherwise = pure Nothing
+
+
+incMaster :: Int -> Int -> X Int
+incMaster nmaster d = withWindowSet $ \winset -> pure $ applyBoundaries (length (getWindows winset)) (d + nmaster)
+
+killedMaster :: Int -> Window -> X (Maybe Int)
+killedMaster nmaster win = withWindowSet $ \winset -> pure $
+    let
+      -- Decrease by one if deleting master window.
+      -- When I have more than one master window and want to delete one of them
+      -- it is very rarely that I want to keep the same number of master windows
+      newMasterNum = max 1 $ nmaster - fromEnum (isMaster nmaster win (getWindows winset))
+    in
+      if newMasterNum == nmaster
+        then Nothing
+        else Just newMasterNum
+
+getWindows :: WindowSet -> [Window]
+getWindows = integrate' . stack . workspace . current
+
+applyBoundaries :: Int -> Int -> Int
+applyBoundaries n = max 1 . min n
+
+isMaster :: Int -> Window -> [Window] -> Bool
+isMaster nmaster w ws = fromMaybe False $ fmap (< nmaster) $ lookup' w ws
+
+lookup' :: Eq a => a -> [a] -> Maybe Int
+lookup' x xs = lookup x $ zip xs [0..]
+
+
+data InverseMaster a = InverseMaster
+  deriving (Read, Show)
+
+instance LayoutModifier InverseMaster Window where
+  handleMessOrInterceptIt _ msg
+    | Just (IncMasterN d) <- fromMessage msg = pure . Just . That . SomeMessage $ IncMasterN (-d)
+    | otherwise = pure Nothing
+
+inverseMaster :: l a -> ModifiedLayout InverseMaster l a
+inverseMaster = ModifiedLayout InverseMaster
+
+
+data Killed = Killed Window
+    deriving (Typeable)
+instance Message Killed
