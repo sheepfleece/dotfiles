@@ -6,21 +6,18 @@
 
   home.packages = with pkgs; let
 
-    # neuron = let 
-    #   neuronSrc = builtins.fetchTarball "https://github.com/srid/neuron/archive/master.tar.gz";
-    # in import neuronSrc {};
-    
-
     graphics = [
-      grafx2
+      gimp          # image manipulator!
+      grafx2 # Bitmap paint
       krita         # graphics editor
       blender       # 3D creation suite
       aseprite      
       darktable
       obs-studio
+
+      wesnoth
     ];
 
-    xrect = pkgs.callPackage ./pkgs/xrect {};
 
     x-related = [
       xkb-switch
@@ -28,15 +25,17 @@
       xss-lock
       xbindkeys
       xorg.xmodmap
-      xrect
+      slop
 
       feh
       rofi-unwrapped  # windows switcher
       shotgun         # Screenshots 
-      kdeApplications.kmag # Screen magnifier
     ];
 
     utils = [
+      pass
+      sublime3
+
       enca # guess and change encodings ; enca -l ru -x UTF-8 <FILE>
       ipfs # decentralized web
       wgetpaste # send file to paste service
@@ -46,7 +45,7 @@
 
       exa           # ls replacement in Rust
       ffmpeg        # convert audio, etc.
-      libav         # fork of ffmpeg
+      # libav         # fork of ffmpeg
 
       tldr          # man with examples
       file          # types of files
@@ -98,10 +97,15 @@
       parallel-full # execute jobs in parallel 
       kid3        # audio tagger
       wine
+      steam-run-native
+
+      httpie
+      curlie
     ]; 
 
     unusedUtils = [
       gitAndTools.gitflow # opinionated branch manager
+      kdeApplications.kmag # Screen magnifier
       libxml2       # xmllint
       calibre           # .epub
       jq          # neuron needs it
@@ -115,14 +119,14 @@
 
     social = [
       tdesktop
-      signal-desktop
+      # signal-desktop
     ];
 
     apps = [
       artha
+      skype
       sent          # presentations
       lynx          # web browser
-      gimp          # image manipulator!
       deluge        # Torrent client
       mpd           # music server
       ncmpcpp       # music player
@@ -131,6 +135,9 @@
       })
       sxiv        # Simple X Image Viewer
       anki        # cards
+      torsocks
+      jrnl        # diary
+      irssi         # IRC Channel
     ];
     unusedApps = [
 
@@ -140,9 +147,7 @@
       libreoffice   #  documents and presentations
       gnome3.cheese #  webcam
       jitsi         #  webconferences
-      jrnl        # diary
       joplin      # notes
-      irssi         # IRC Channel
       newsboat      # RSS Feed
       mysql-workbench #  Schema builder
       testdisk        #  file recovery
