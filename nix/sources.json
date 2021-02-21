@@ -11,6 +11,18 @@
         "url": "https://github.com/rbgrouleff/bclose.vim/archive/99018b4a2dd18aea1cbd3aa23565b01a0f8c5b73.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
+    "firenvim": {
+        "branch": "master",
+        "description": "Embed Neovim in your browser.",
+        "homepage": null,
+        "owner": "glacambre",
+        "repo": "firenvim",
+        "rev": "2a50ec00381b445b48823ea7e5961b349dfad445",
+        "sha256": "1m1anvs6hszd2s8kwl2mcxslsipqvmaxvbdsnwq06z7v1qp0sph4",
+        "type": "tarball",
+        "url": "https://github.com/glacambre/firenvim/archive/2a50ec00381b445b48823ea7e5961b349dfad445.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "gruvbox": {
         "branch": "master",
         "description": "Retro groove color scheme for Vim",

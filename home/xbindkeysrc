@@ -58,13 +58,13 @@
    XF86MonBrightnessDown
 
 # Screenshots
-"shotgunx"
+"cd ~/Pictures/screenshots && shotgun --geometry $(slop 2>/dev/null)"
   Print
 
 "cd ~/Pictures/screenshots && shotgun --id $(xdotool getactivewindow)"
   Control + Print
 
-"cd ~/Pictures/screenshots && shotgun --geometry $(xrect)"
+"cd ~/Pictures/screenshots && shotgun"
   Alt + Print
 
 # Touchpad
@@ -73,13 +73,13 @@
 
 # Another keyboard
 
-# Increase backlight
-"light -A 10"
-   Mod4 + equal
+# # Increase backlight
+# "light -A 10"
+#    Mod4 + equal
 
-# Decrease backlight
-"light -U 10"
-   Mod4 + minus
+# # Decrease backlight
+# "light -U 10"
+#    Mod4 + minus
 
 "if [ `setxkbmap -query | grep layout | grep -o ru | wc -l` -eq 1 ]; then setxkbmap -layout 'by(latin),by'; else setxkbmap -layout 'by(latin),ru'; fi"
    Alt + equal   

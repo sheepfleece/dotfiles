@@ -80,6 +80,8 @@ let
     "vim-move"         # <A-j> <A-k>
     "vim-signature"    # Signatures for navigation marks
     "vim-textobj-line" # <action>al
+
+    "firenvim"
   ];
   nivUnusedPlugins = map mkPlugin [
     "vimroom"          # <leader>V
