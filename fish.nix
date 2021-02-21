@@ -28,6 +28,12 @@
     "jjjj" = "pop 4";
     "stopwatch" = "time read";
 
+    "less" = "less --lesskey-file=$XDG_DATA_HOME/lesskey";
+    "man"  = ''man --pager="less --lesskey-file=$XDG_DATA_HOME/lesskey"'';
+    "wget" = "wget --hsts-file $XDG_DATA_HOME/wget/wget-hsts";
+
+
+
     cbuild="cabal build --enable-tests --enable-benchmarks --write-ghc-environment-files=always -O0";
     ctest="cabal test --enable-tests --test-show-details=direct -O0";
     cbench="cabal bench --enable-benchmarks -O0";
@@ -83,6 +89,8 @@
 
     "nc" = "ncmpcpp";
 
+    "rgi"  = "rg --ignore-case";
+
     # list sizes
     "lss"  = "du -sh * | sort -rh | column -t";
 
@@ -107,6 +115,7 @@
     set -x fish_color_quote 'e2a478'
     set -x fish_color_operator 'e2a478'
     set -x PATH "$PATH:/home/sheep/dotfiles/scripts"
+    set -x XDG_DATA_HOME $HOME/.local/share
     set FZF_DEFAULT_COMMAND 'fd --type f'
     # set PATH $HOME/dotfiles/scripts $PATH
     eval (direnv hook fish)
