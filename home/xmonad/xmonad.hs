@@ -6,10 +6,10 @@
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TupleSections         #-}
 {-# LANGUAGE TypeOperators         #-}
+{-# LANGUAGE ViewPatterns          #-}
 
 import           XMonad                       hiding (Screen, focus)
 import           XMonad.Actions.Minimize
-
 import           XMonad.Config.Kde
 import           XMonad.Config.Prime          (getClassHint, resClass)
 import           XMonad.Hooks.DynamicLog      (dynamicLogWithPP, ppOutput,
@@ -19,7 +19,8 @@ import           XMonad.Hooks.InsertPosition
 import           XMonad.Hooks.ManageDocks
 import           XMonad.Hooks.ManageHelpers
 import           XMonad.Hooks.RefocusLast     (refocusLastLogHook,
-                                               refocusLastWhen)
+                                               refocusLastWhen, swapWithLast,
+                                               toggleFocus)
 import           XMonad.Layout.LayoutModifier
 import           XMonad.Layout.NoBorders
 import           XMonad.Layout.ResizableTile
@@ -35,10 +36,13 @@ import           XMonad.Operations            hiding (focus)
 import           XMonad.StackSet              hiding (workspaces)
 
 import           Control.Applicative          ((<|>))
+import           Control.Arrow                ((&&&), (>>>))
 import           Control.Concurrent
 import           Control.Monad                (when)
 import           Data.Foldable
 import           Data.Function
+import           Data.Map                     (Map)
+import qualified Data.Map                     as Map
 import           Data.Maybe
 import           Data.Monoid                  (All)
 import           Text.Read                    (readMaybe)
@@ -48,8 +52,12 @@ import           Graphics.X11.Xinerama
 import           Data.Ratio
 
 import           Data.Coerce                  (coerce)
+import           Data.List                    ((\\))
 import qualified Data.List                    as L
+import qualified Data.List                    as List
 import           GHC.List                     (lookup)
+
+import           Debug.Trace
 
 data MyWorkspaces
   = Dev1  | Dev2
@@ -81,6 +89,7 @@ myAdditionalKeys =
   [ ((myModMask, xK_c), killsWindow)
   , ((myModMask, xK_z), sendMessage MirrorShrink)
   , ((myModMask, xK_a), sendMessage MirrorExpand)
+  , ((myModMask .|. shiftMask, xK_z), sendMessage Reset)
 
   , ((myModMask, xK_Return), spawn "alacritty")
 
@@ -101,6 +110,9 @@ myAdditionalKeys =
    -}
   , ((myModMask, xK_o), sendMessage ToggleStruts)
 
+  , ((myModMask, xK_Tab), toggleFocus)
+  , ((myModMask .|. shiftMask, xK_Tab), swapWithLast)
+
 
   {-
     Rofi is used for navigating workspaces and opening applications.
@@ -118,6 +130,7 @@ killsWindow = withFocused $ \f -> sendMessage (Killed f) >> withFocused killWind
 myManageHook :: ManageHook
 myManageHook = composeAll $
   [ (className =? "Firefox" <&&> resource =? "Dialog") --> doFloat
+  , (title =? "NoScript Blocked Objects — Mozilla Firefox") --> doFloat
   , (className =? "TelegramDesktop" <&&> title =? "Media viewer") --> doFloat
   , (className =? "Anki") --> doFloat
   , (className =? "Steam" <&&> title =? "Friends List") --> doRectFloat (RationalRect (3 % 4) (1 % 2) (1 % 4) (1 % 2))
@@ -214,28 +227,37 @@ myLayout
   = avoidStruts
   $ tiled ||| threeCols
 
-type MyTiled = (SmartMaster !* Magnifier !* Magnifier !* ResizableTall)
+type MyTiled = (SmartMaster !* Magnifier !* Magnifier !* ResizeVertically !* Tall)
 tiled :: MyTiled Window
 tiled
   = smartMaster nmasters
   $ magnify nmasters FullScreen Off All
   $ magnify nmasters (Ratio 1.2 1.2) Off All
-  $ ResizableTall nmasters delta ratio []
+  $ resizeVertically delta
+  $ Tall nmasters delta ratio
 
-type MyThreeCols = (InverseMaster !* SmartMaster !* Magnifier !* Magnifier !* ThreeCol)
+type MyThreeCols
+  = (InverseMaster    -- Increase number of master windows instead of decreasing
+  !* SmartMaster      -- There is always one master window and there can't be more masters than windows
+  !* Magnifier        -- FullScreen mode
+  !* Magnifier        -- Magnify currently selected window
+  !* ResizeVertically -- Allow windows to be resized vertically as well
+  !* ThreeCol
+    )
 threeCols :: MyThreeCols Window
 threeCols
   = inverseMaster
   $ smartMaster nmasters
   $ magnify nmasters FullScreen Off All
   $ magnify nmasters (Ratio 1.3 1.3) On NoMaster
+  $ resizeVertically delta
   $ ThreeColMid nmasters delta ratio
 
 nmasters :: Int
 nmasters = 1
 
 delta, ratio :: Ratio Integer
-delta   = 12/100
+delta   = 6/100
 ratio   = 1/2
 
 myModMask :: KeyMask
@@ -251,7 +273,7 @@ myConfig = kde4Config
   , focusedBorderColor = "#e2a478"
   , normalBorderColor  = "#1c1c1c"
   , workspaces         = fmap snd myWorkspaces
-  , layoutHook         = myLayout
+  , layoutHook         = myLayout -- avoidStruts threeCols
   , logHook            = refocusLastLogHook <+> myLogHook
   , manageHook         =
     myManageHook <+> manageHook kde4Config <+> insertPosition Below Newer
@@ -318,7 +340,7 @@ magnifiercz' cz = magnify 1 (Ratio (fromRational cz) (fromRational cz)) On NoMas
 maximizeVertical :: l a -> ModifiedLayout Magnifier l a
 maximizeVertical = magnify 1 Horizontal Off All
 
-
+--------------------------------------
 data Zoom = Ratio !Double !Double | Horizontal | Vertical | FullScreen
   deriving (Read, Show)
 
@@ -344,7 +366,7 @@ magnify :: Int -> Zoom -> Toggle -> MagnifyMaster -> l a -> ModifiedLayout Magni
 magnify n z t m = ModifiedLayout $ Mag n z t m
 
 data Toggle = On | Off
-  deriving (Read, Show)
+  deriving (Read, Show, Eq)
 
 toggle :: Toggle -> Toggle
 toggle On  = Off
@@ -356,9 +378,9 @@ data MagnifyMaster = All | NoMaster
 instance LayoutModifier Magnifier Window where
     redoLayout mag r (Just s) wrs =
       case (mg_toggle mag, mg_master mag) of
-        (On, All) -> applyMagnifier (mg_zoom mag) r s wrs
-        (On, NoMaster) -> unlessMaster (mg_nmaster mag) (applyMagnifier (mg_zoom mag)) r s wrs
-        (Off, _) -> pure (wrs, Nothing)
+        (On, All)      -> applyMagnifier mag r s wrs
+        (On, NoMaster) -> unlessMaster (mg_nmaster mag) (applyMagnifier mag) r s wrs
+        (Off, _)       -> pure (wrs, Nothing)
 
     redoLayout _ _ _ wrs = pure (wrs, Nothing)
 
@@ -377,36 +399,44 @@ instance LayoutModifier Magnifier Window where
         (Off, _)       -> "Magnifier (off)"
 
 handlePureMess :: Magnifier a -> SomeMessage -> Maybe (Magnifier a)
-handlePureMess mag@(Mag _ (Ratio dx dy) On _) m
+handlePureMess (id &&& mg_toggle &&& mg_zoom -> (mag, (On, Ratio dx dy))) m
   | Just (Magnify d) <- fromMessage m = Just mag { mg_zoom = Ratio (d + dx) (d + dy) }
   | Just (IncMasterN d) <- fromMessage m = Just mag { mg_nmaster = max 0 (mg_nmaster mag + d) }
 
-handlePureMess mag@(Mag _ _ On _) m
+handlePureMess (id &&& mg_toggle -> (mag, On)) m
   | Just ToggleOff   <- fromMessage m = Just mag { mg_toggle = Off }
   | Just (SetZoom z) <- fromMessage m = Just mag { mg_zoom = z }
 
-handlePureMess mag@(Mag _ _ Off _) m
+handlePureMess (id &&& mg_toggle -> (mag, Off)) m
   | Just ToggleOn    <- fromMessage m = Just mag { mg_toggle = On }
-
 
 handlePureMess _ _ = Nothing
 
-type NewLayout a = Rectangle -> Stack a -> [(Window, Rectangle)] -> X ([(Window, Rectangle)], Maybe (Magnifier a))
+type NewLayout a
+  =  Rectangle -> Stack a -> [(Window, Rectangle)]
+  -> X ([(Window, Rectangle)], Maybe (Magnifier a))
 
 unlessMaster :: Int -> NewLayout a -> NewLayout a
 unlessMaster n mainmod r s wrs
   | null (drop (n-1) (up s)) = pure (wrs, Nothing)
   | otherwise                = mainmod r s wrs
 
-applyMagnifier :: Zoom -> Rectangle -> t -> [(Window, Rectangle)]
-               -> X ([(Window, Rectangle)], Maybe a)
-applyMagnifier z r _ wrs = do
-  focused <- withWindowSet (pure . peek)
-  let mag (w, wr) ws
-        | focused == Just w = ws ++ [(w, magnifyInto z wr r)]
-        | otherwise         = (w,wr) : ws
+applyMagnifier :: Magnifier Window -> Rectangle -> Stack Window
+               -> [(Window, Rectangle)]
+               -> X ([(Window, Rectangle)], Maybe (Magnifier Window))
+applyMagnifier mg r stack wrs = do
+  let focused = focus stack
+      z = mg_zoom mg
 
-  pure (reverse $ foldr mag [] wrs, Nothing)
+      mag :: (Window, Rectangle) -> [(Window, Rectangle)] -> [(Window, Rectangle)]
+      mag (w, wr) ws
+        | focused  == w = ws ++ [(w, magnifyInto z wr r)]
+        | otherwise     = (w,wr) : ws
+
+  pure
+    ( reverse $ foldr mag [] wrs
+    , Nothing
+    )
 
 magnifyInto :: Zoom -> Rectangle -> Rectangle -> Rectangle
 magnifyInto zoom rect@(Rectangle x y w h) screenRect@(Rectangle sx sy sw sh) =
@@ -431,6 +461,8 @@ fit (Rectangle sx sy sw sh) (Rectangle x y w h) = Rectangle x' y' w' h'
     y' = max sy (y - max 0 (y + fi h - sy - fi sh))
     w' = min sw w
     h' = min sh h
+
+----------------------------------------------------------------------------------------------
 
 smartMaster :: Int -> l a -> ModifiedLayout SmartMaster l a
 smartMaster n l = ModifiedLayout (SmartMaster n) l
@@ -496,3 +528,113 @@ inverseMaster = ModifiedLayout InverseMaster
 data Killed = Killed Window
     deriving (Typeable)
 instance Message Killed
+
+----------------------------------------------------------------------------------------------
+
+data ResizeVertically a = ResizeVertically
+  { rv_delta :: Rational
+  , rv_fracs :: Map Window Rational
+  }
+  deriving (Show, Read)
+
+resizeVertically :: Rational -> l a -> ModifiedLayout ResizeVertically l a
+resizeVertically r l = ModifiedLayout (ResizeVertically r Map.empty) l
+
+instance LayoutModifier ResizeVertically Window where
+  handleMess rv msg
+    | Just MirrorShrink <- fromMessage msg = resizeFocus (rv_delta rv)
+    | Just MirrorExpand <- fromMessage msg = resizeFocus (0 - rv_delta rv)
+
+    | Just Reset <- fromMessage msg = pure $ Just $ rv { rv_fracs = Map.empty }
+
+    | otherwise = pure Nothing
+
+    where
+      resizeFocus :: Rational -> X (Maybe (ResizeVertically Window))
+      resizeFocus delta = do
+        mws <- stack . workspace . current <$> gets windowset
+        pure $ mws >>= Just . resizeFocus' delta
+
+      resizeFocus' :: Rational -> Stack Window -> ResizeVertically Window
+      resizeFocus' delta stack = rv { rv_fracs = newfracs }
+        where
+          newfracs = Map.insertWith (+) (focus stack) delta (rv_fracs rv)
+
+  redoLayout
+    :: ResizeVertically Window
+    -> Rectangle
+    -> Maybe (Stack Window)
+    -> [(Window, Rectangle)]
+    -> X ([(Window, Rectangle)], Maybe (ResizeVertically Window))
+  redoLayout _ _ Nothing wrs = pure (wrs, Nothing)
+  redoLayout rv screen (Just _) wrs = do
+    fs <- floating <$> gets windowset
+    let wrs_new = concat $ resplitVertically screen fs (rv_fracs rv) <$> separateCols wrs
+
+    pure . (, Nothing) $ wrs_new
+
+
+type WR = (Window, Rectangle)
+
+type List a = [a]
+
+separateCols
+  :: List (Window, Rectangle)
+  -> List (List (Window, Rectangle))
+separateCols
+  =   List.sortBy (compare `on` (snd >>> rect_x))
+  >>> List.groupBy ((==) `on` (snd >>> rect_x))
+  >>> fmap (List.sortBy (compare `on` (snd >>> rect_y)))
+
+
+resplitVertically
+  :: Rectangle               {- dimensions of the whole screen -}
+  -> Map Window RationalRect {- floating windows -}
+  -> Map Window Rational     {- fractions by which to resplit windows -}
+  -> [(Window, Rectangle)]
+  -> [(Window, Rectangle)]
+resplitVertically screen floats fracs = go
+  where
+    go :: [(Window, Rectangle)] -> [(Window, Rectangle)]
+    go [] = []
+
+    -- If there is only one window, do nothing
+    go [wr] = [wr]
+
+    -- The last window is resized from the top border
+    go [(w, r), (w_last, r_last)] =
+      let frac = Map.findWithDefault 0 w fracs
+          frac_last = Map.findWithDefault 0 w_last fracs
+          d = delta (frac + frac_last)
+          r' = fit screen $ r { rect_height = rect_height r + d }
+          r_last' = fit screen $
+            r_last
+              { rect_height = rect_height r_last - d
+              , rect_y      = rect_y r_last + fi d
+              }
+      in [(w, r'), (w_last, r_last')]
+
+
+    -- Generally windows are resized by moving the bottom border of triangle
+    go ((w, r):(w_next, r_next):wrs)
+      | Just frac <- Map.lookup w fracs =
+        let
+          d = delta frac
+          r' = fit screen $ r { rect_height = rect_height r + d }
+          r_next' = fit screen $
+            r_next
+              { rect_height = rect_height r_next - d
+              , rect_y      = rect_y r_next + fi d
+              }
+        in (w, r') : go ((w_next, r_next'):wrs)
+
+    -- Otherwise do nothing
+    go (wr:wrs) = wr : go wrs
+
+    delta :: Rational -> Dimension
+    delta frac = truncate $ fromIntegral (rect_height screen) * frac
+
+data Reset = Reset
+    deriving (Typeable)
+instance Message Reset
+
